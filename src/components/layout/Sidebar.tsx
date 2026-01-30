@@ -1,5 +1,4 @@
 import { Link, useLocation } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import {
     Collapsible,
@@ -7,7 +6,7 @@ import {
     CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { appointmentService } from '@/services/appointment.service';
+import { useGetMyQueue } from '@/hooks/use-appointments';
 import { useState } from 'react';
 import {
     DashboardIcon,
@@ -54,13 +53,8 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
     const location = useLocation();
     const [openSections, setOpenSections] = useState<string[]>(['phongKham', 'hoSo']);
 
-    // Fetch queue count for badge
-    const { data: queueData } = useQuery({
-        queryKey: ['doctorQueue'],
-        queryFn: () => appointmentService.getMyQueue(),
-        refetchInterval: 30000,
-        staleTime: 10000,
-    });
+    // Fetch queue count for badge using custom hook
+    const { data: queueData } = useGetMyQueue();
 
     const queueCount = queueData?.totalInQueue || 0;
     // const inProgressCount = queueData?.inProgress?.length || 0; // Unused for now

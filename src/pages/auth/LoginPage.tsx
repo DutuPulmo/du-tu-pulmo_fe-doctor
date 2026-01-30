@@ -4,44 +4,46 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { authService } from '@/services/auth.service';
+import { useLogin } from '@/hooks/use-auth';
 import { setRefreshToken, setToken } from '@/lib/auth';
 import { useAppStore } from '@/store/useAppStore';
 import { toast } from 'sonner';
 
+// ... (We need to rewrite the whole component logic slightly better to fit replace_file_content or use multi_replace.
+// Since it's a structural change in the logic block, replacing the logic block is better.
+
 export default function LoginPage() {
     const navigate = useNavigate();
     const { setUser } = useAppStore();
-    const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         email: '',
         password: '',
     });
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    // Use useLogin hook
+    const loginMutation = useLogin();
+
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true);
 
-        try {
-            const response = await authService.login(formData);
-            if (response.accessToken && response.refreshToken) {
-                setToken(response.accessToken);
-                setRefreshToken(response.refreshToken);
+        loginMutation.mutate(formData, {
+            onSuccess: (response) => {
+                if (response.accessToken && response.refreshToken) {
+                    setToken(response.accessToken);
+                    setRefreshToken(response.refreshToken);
 
-                // Update Store (which also updates localStorage for User)
-                setUser(response.account.user);
+                    // Update Store (which also updates localStorage for User)
+                    setUser(response.account.user);
 
-                toast.success('Đăng nhập thành công!');
-                navigate('/doctor');
+                    toast.success('Đăng nhập thành công!');
+                    navigate('/doctor');
+                }
+            },
+            onError: (error: any) => {
+                const errorMessage = error?.response?.data?.message || 'Đăng nhập thất bại. Vui lòng thử lại.';
+                toast.error(errorMessage);
             }
-        } catch (error: unknown) {
-            const errorMessage = error instanceof Error && 'response' in error
-                ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-                : undefined;
-            toast.error(errorMessage || 'Đăng nhập thất bại. Vui lòng thử lại.');
-        } finally {
-            setLoading(false);
-        }
+        });
     };
 
     return (
@@ -77,8 +79,8 @@ export default function LoginPage() {
                                 required
                             />
                         </div>
-                        <Button type="submit" className="w-full" disabled={loading}>
-                            {loading ? 'Đang đăng nhập...' : 'Đăng Nhập'}
+                        <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
+                            {loginMutation.isPending ? 'Đang đăng nhập...' : 'Đăng Nhập'}
                         </Button>
                     </form>
                 </CardContent>
