@@ -4,8 +4,6 @@ import { vi } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-// import { Badge } from '@/components/ui/badge';
-// import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AppointmentType, ScheduleType } from '@/lib/constants';
 import type { DoctorSchedule } from '@/types/schedule';
 
