@@ -9,9 +9,6 @@ import { setRefreshToken, setToken } from '@/lib/auth';
 import { useAppStore } from '@/store/useAppStore';
 import { toast } from 'sonner';
 
-// ... (We need to rewrite the whole component logic slightly better to fit replace_file_content or use multi_replace.
-// Since it's a structural change in the logic block, replacing the logic block is better.
-
 export default function LoginPage() {
     const navigate = useNavigate();
     const { setUser } = useAppStore();
