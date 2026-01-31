@@ -1,8 +1,15 @@
+import { PageHeader } from '@/components/layout/PageHeader';
+
 export const PrescriptionPage = () => {
     return (
-        <div className="p-6">
-            <h1 className="text-2xl font-bold mb-4">Quản lý đơn thuốc</h1>
-            <p className="text-gray-600">Trang này đang được xây dựng.</p>
+        <div className="space-y-6">
+            <PageHeader
+                title="Quản lý đơn thuốc"
+                subtitle="Kê đơn và quản lý lịch sử đơn thuốc"
+            />
+            <div className="p-6">
+                <p className="text-gray-600">Trang này đang được xây dựng.</p>
+            </div>
         </div>
     );
 };

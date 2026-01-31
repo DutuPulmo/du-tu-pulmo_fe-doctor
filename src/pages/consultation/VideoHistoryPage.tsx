@@ -1,8 +1,15 @@
+import { PageHeader } from '@/components/layout/PageHeader';
+
 export const VideoHistoryPage = () => {
     return (
-        <div className="p-6">
-            <h1 className="text-2xl font-bold mb-4">Lịch sử cuộc gọi</h1>
-            <p className="text-gray-600">Trang này đang được xây dựng.</p>
+        <div className="space-y-6">
+            <PageHeader
+                title="Lịch sử cuộc gọi"
+                subtitle="Xem lại lịch sử các cuộc tư vấn video"
+            />
+            <div className="p-6">
+                <p className="text-gray-600">Trang này đang được xây dựng.</p>
+            </div>
         </div>
     );
 };

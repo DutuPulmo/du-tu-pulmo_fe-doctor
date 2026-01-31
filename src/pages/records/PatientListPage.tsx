@@ -1,8 +1,15 @@
+import { PageHeader } from '@/components/layout/PageHeader';
+
 export const PatientListPage = () => {
     return (
-        <div className="p-6">
-            <h1 className="text-2xl font-bold mb-4">Danh sách bệnh nhân</h1>
-            <p className="text-gray-600">Trang này đang được xây dựng.</p>
+        <div className="space-y-6">
+            <PageHeader
+                title="Danh sách bệnh nhân"
+                subtitle="Quản lý thông tin và hồ sơ bệnh nhân"
+            />
+            <div className="p-6">
+                <p className="text-gray-600">Trang này đang được xây dựng.</p>
+            </div>
         </div>
     );
 };

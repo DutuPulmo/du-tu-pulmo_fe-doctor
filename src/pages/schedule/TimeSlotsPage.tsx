@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Plus, Calendar as CalendarIcon } from 'lucide-react';
@@ -123,18 +124,16 @@ export const TimeSlotsPage = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h2 className="text-2xl font-bold tracking-tight">Quản Lý Time Slots</h2>
-                    <p className="text-muted-foreground">
-                        Quản lý chi tiết các khung giờ khám trong ngày.
-                    </p>
-                </div>
-                <Button onClick={handleCreate}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Tạo Time Slot
-                </Button>
-            </div>
+            <PageHeader
+                title="Quản Lý Time Slots"
+                subtitle="Quản lý chi tiết các khung giờ khám trong ngày."
+                rightSlot={
+                    <Button onClick={handleCreate}>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Tạo Time Slot
+                    </Button>
+                }
+            />
 
             <div className="flex items-end gap-4">
                 <div className="flex-1 max-w-xs space-y-2">
@@ -148,6 +147,7 @@ export const TimeSlotsPage = () => {
                                     !selectedDate && "text-muted-foreground"
                                 )}
                             >
+
                                 <CalendarIcon className="mr-2 h-4 w-4" />
                                 {selectedDate ? format(new Date(selectedDate), "dd/MM/yyyy", { locale: vi }) : <span>Chọn ngày</span>}
                             </Button>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -189,14 +190,10 @@ export const SchedulePage = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h2 className="text-2xl font-bold tracking-tight">Quản Lý Lịch Làm Việc</h2>
-                    <p className="text-muted-foreground">
-                        Thiết lập lịch làm việc cố định, lịch linh hoạt và quản lý thời gian nghỉ.
-                    </p>
-                </div>
-            </div>
+            <PageHeader
+                title="Quản Lý Lịch Làm Việc"
+                subtitle="Thiết lập lịch làm việc cố định, lịch linh hoạt và quản lý thời gian nghỉ."
+            />
 
             <Tabs defaultValue="regular" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
                 <TabsList>
