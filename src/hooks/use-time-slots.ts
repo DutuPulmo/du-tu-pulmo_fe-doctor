@@ -16,7 +16,7 @@ export const TIME_SLOT_KEYS = {
 export function useGetAllSlots(doctorId: string) {
     return useQuery({
         queryKey: TIME_SLOT_KEYS.list(doctorId),
-        queryFn: () => timeSlotService.getAllSlots(doctorId),
+        queryFn: () => timeSlotService.getTimeSlots(doctorId),
         enabled: !!doctorId,
     });
 }
@@ -29,7 +29,7 @@ export function useGetAllSlots(doctorId: string) {
 export function useGetAvailableSlots(doctorId: string, date: string) {
     return useQuery({
         queryKey: TIME_SLOT_KEYS.available(doctorId, date),
-        queryFn: () => timeSlotService.getAvailableSlots(doctorId, date),
+        queryFn: () => timeSlotService.getAvailableTimeSlots(doctorId, date),
         enabled: !!doctorId && !!date,
     });
 }
@@ -46,7 +46,7 @@ export function useGetWeeklySlots(doctorId: string, dates: Date[]) {
             const dateStr = format(date, 'yyyy-MM-dd');
             return {
                 queryKey: TIME_SLOT_KEYS.available(doctorId, dateStr),
-                queryFn: () => timeSlotService.getAvailableSlots(doctorId, dateStr),
+                queryFn: () => timeSlotService.getAvailableTimeSlots(doctorId, dateStr),
                 enabled: !!doctorId,
             };
         }),

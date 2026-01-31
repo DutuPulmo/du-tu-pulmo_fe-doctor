@@ -232,7 +232,7 @@ export function WeeklySlotCalendar({ doctorId }: WeeklySlotCalendarProps) {
                                                             key={slot.id}
                                                             className={cn(
                                                                 "p-2 rounded text-xs border",
-                                                                getAppointmentTypeColor(slot.appointmentType)
+                                                                getAppointmentTypeColor(slot.allowedAppointmentTypes?.[0])
                                                             )}
                                                         >
                                                             <div className="flex items-center gap-1">
@@ -259,7 +259,7 @@ export function WeeklySlotCalendar({ doctorId }: WeeklySlotCalendarProps) {
                                                             key={slot.id}
                                                             className={cn(
                                                                 "p-2 rounded text-xs border",
-                                                                getAppointmentTypeColor(slot.appointmentType)
+                                                                getAppointmentTypeColor(slot.allowedAppointmentTypes?.[0])
                                                             )}
                                                         >
                                                             <div className="flex items-center gap-1">
@@ -286,7 +286,7 @@ export function WeeklySlotCalendar({ doctorId }: WeeklySlotCalendarProps) {
                                                             key={slot.id}
                                                             className={cn(
                                                                 "p-2 rounded text-xs border",
-                                                                getAppointmentTypeColor(slot.appointmentType)
+                                                                getAppointmentTypeColor(slot.allowedAppointmentTypes?.[0])
                                                             )}
                                                         >
                                                             <div className="flex items-center gap-1">
