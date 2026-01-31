@@ -29,6 +29,18 @@ const BillingPage = lazy(() => import('@/pages/reports/BillingPage'));
 const HelpPage = lazy(() => import('@/pages/help/HelpPage'));
 const AboutPage = lazy(() => import('@/pages/help/AboutPage'));
 
+// Detail Pages
+const PatientDetailPage = lazy(() => import('@/pages/records/PatientDetailPage'));
+const AppointmentDetailPage = lazy(() => import('@/pages/appointment/AppointmentDetailPage'));
+
+// Auth & Settings
+const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'));
+const ProfilePage = lazy(() => import('@/pages/settings/ProfilePage'));
+
+// Error Pages
+const NotFoundPage = lazy(() => import('@/pages/error/NotFoundPage'));
+const ForbiddenPage = lazy(() => import('@/pages/error/ForbiddenPage'));
+
 // Loading Fallback
 const LoadingFallback = () => (
   <div className="flex items-center justify-center h-screen w-full bg-gray-50">
@@ -47,6 +59,9 @@ function App() {
         <Routes>
           {/* Public Route */}
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/403" element={<ForbiddenPage />} />
+          <Route path="/404" element={<NotFoundPage />} />
 
           {/* Protected Routes */}
           <Route path="/doctor" element={
@@ -71,12 +86,14 @@ function App() {
 
             {/* Đặt Khám */}
             <Route path="appointments" element={<AppointmentListPage />} />
+            <Route path="appointments/:id" element={<AppointmentDetailPage />} />
             <Route path="schedules" element={<SchedulePage />} />
             <Route path="time-slots" element={<TimeSlotsPage />} />
 
             {/* Hồ Sơ */}
             <Route path="medical-records" element={<MedicalRecordPage />} />
             <Route path="patients" element={<PatientListPage />} />
+            <Route path="patients/:id" element={<PatientDetailPage />} />
             <Route path="prescriptions" element={<PrescriptionPage />} />
 
             {/* Cận Lâm Sàng */}
@@ -94,8 +111,15 @@ function App() {
             <Route path="help" element={<HelpPage />} />
             <Route path="about" element={<AboutPage />} />
 
-            <Route path="*" element={<div>Not found</div>} />
+
+            {/* Settings */}
+            <Route path="profile" element={<ProfilePage />} />
+
+            <Route path="*" element={<Navigate to="/404" replace />} />
           </Route>
+
+          {/* Catch all for non-nested routes */}
+          <Route path="*" element={<Navigate to="/404" replace />} />
 
           {/* Redirect root to doctor or login */}
           <Route path="/" element={<Navigate to="/doctor" replace />} />
