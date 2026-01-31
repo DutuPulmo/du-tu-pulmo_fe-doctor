@@ -16,7 +16,7 @@ import type { CreateScheduleDto } from '@/types/schedule'; // Import DTO types i
 export const SchedulePage = () => {
     // 1. Get Doctor Info from Store (Giả sử store đã lưu user info sau khi login)
     const { user } = useAppStore();
-    const doctorId = user?.id || ''; // Fallback nếu chưa có ID (thường sẽ được bảo vệ bởi route guard)
+    const doctorId = user?.doctorId || ''; // Fallback nếu chưa có ID (thường sẽ được bảo vệ bởi route guard)
 
     // 2. Fetch Data using Hooks
     const { data: schedules = [], isLoading, isError } = useGetSchedules(doctorId);

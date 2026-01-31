@@ -8,7 +8,7 @@ import { WeeklySlotCalendar } from '@/components/schedule/WeeklySlotCalendar';
  */
 export const TimeSlotsPage = () => {
     const { user } = useAppStore();
-    const doctorId = user?.id || '';
+    const doctorId = user?.doctorId || '';
 
     return (
         <div className="space-y-6">

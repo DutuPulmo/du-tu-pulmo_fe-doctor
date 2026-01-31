@@ -10,6 +10,25 @@ const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
 const SchedulePage = lazy(() => import('@/pages/schedule/SchedulePage').then(module => ({ default: module.SchedulePage })));
 const TimeSlotsPage = lazy(() => import('@/pages/schedule/TimeSlotsPage').then(module => ({ default: module.TimeSlotsPage })));
 
+// New Pages
+const ReceptionPage = lazy(() => import('@/pages/reception/ReceptionPage'));
+const QueuePage = lazy(() => import('@/pages/reception/QueuePage'));
+const TodaySchedulePage = lazy(() => import('@/pages/reception/TodaySchedulePage'));
+const VideoWaitingPage = lazy(() => import('@/pages/consultation/VideoWaitingPage'));
+const ChatPage = lazy(() => import('@/pages/consultation/ChatPage'));
+const VideoHistoryPage = lazy(() => import('@/pages/consultation/VideoHistoryPage'));
+const AppointmentListPage = lazy(() => import('@/pages/appointment/AppointmentListPage'));
+const MedicalRecordPage = lazy(() => import('@/pages/records/MedicalRecordPage'));
+const PatientListPage = lazy(() => import('@/pages/records/PatientListPage'));
+const PrescriptionPage = lazy(() => import('@/pages/records/PrescriptionPage'));
+const AiXrayPage = lazy(() => import('@/pages/clinical/AiXrayPage'));
+const MedicinePage = lazy(() => import('@/pages/treatment/MedicinePage'));
+const ProtocolPage = lazy(() => import('@/pages/treatment/ProtocolPage'));
+const ReportPage = lazy(() => import('@/pages/reports/ReportPage'));
+const BillingPage = lazy(() => import('@/pages/reports/BillingPage'));
+const HelpPage = lazy(() => import('@/pages/help/HelpPage'));
+const AboutPage = lazy(() => import('@/pages/help/AboutPage'));
+
 // Loading Fallback
 const LoadingFallback = () => (
   <div className="flex items-center justify-center h-screen w-full bg-gray-50">
@@ -36,9 +55,45 @@ function App() {
             </ProtectedRoute>
           }>
             <Route index element={<Navigate to="/doctor/overview" replace />} />
+
+            {/* Dashboard */}
             <Route path="overview" element={<OverviewPage />} />
+
+            {/* Phòng Khám */}
+            <Route path="reception" element={<ReceptionPage />} />
+            <Route path="queue" element={<QueuePage />} />
+            <Route path="today" element={<TodaySchedulePage />} />
+
+            {/* Tư Vấn Trực Tuyến */}
+            <Route path="video-waiting" element={<VideoWaitingPage />} />
+            <Route path="chat" element={<ChatPage />} />
+            <Route path="video-history" element={<VideoHistoryPage />} />
+
+            {/* Đặt Khám */}
+            <Route path="appointments" element={<AppointmentListPage />} />
             <Route path="schedules" element={<SchedulePage />} />
             <Route path="time-slots" element={<TimeSlotsPage />} />
+
+            {/* Hồ Sơ */}
+            <Route path="medical-records" element={<MedicalRecordPage />} />
+            <Route path="patients" element={<PatientListPage />} />
+            <Route path="prescriptions" element={<PrescriptionPage />} />
+
+            {/* Cận Lâm Sàng */}
+            <Route path="ai-xray" element={<AiXrayPage />} />
+
+            {/* Thuốc & Điều Trị */}
+            <Route path="medicine" element={<MedicinePage />} />
+            <Route path="protocols" element={<ProtocolPage />} />
+
+            {/* Báo Cáo */}
+            <Route path="reports" element={<ReportPage />} />
+            <Route path="billing" element={<BillingPage />} />
+
+            {/* Thông Tin */}
+            <Route path="help" element={<HelpPage />} />
+            <Route path="about" element={<AboutPage />} />
+
             <Route path="*" element={<div>Not found</div>} />
           </Route>
 
