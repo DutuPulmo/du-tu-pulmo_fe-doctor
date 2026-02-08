@@ -19,7 +19,6 @@ export interface User {
   doctorId?: string;
   patientId?: string;
   roles?: Role[];
-  department?: string;
 }
 
 export interface Account {
