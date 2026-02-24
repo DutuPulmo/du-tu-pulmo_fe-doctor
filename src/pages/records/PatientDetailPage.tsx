@@ -194,7 +194,8 @@ export const PatientDetailPage = () => {
                                 {records.map((record) => (
                                     <div
                                         key={record.id}
-                                        className="p-4 bg-gray-50 rounded-lg border border-gray-100 hover:bg-gray-100 transition-colors"
+                                        className="p-4 bg-gray-50 rounded-lg border border-gray-100 hover:bg-gray-100 transition-colors cursor-pointer"
+                                        onClick={() => navigate(`/doctor/medical-records/${record.id}`)}
                                     >
                                         <div className="flex items-center justify-between">
                                             <div>

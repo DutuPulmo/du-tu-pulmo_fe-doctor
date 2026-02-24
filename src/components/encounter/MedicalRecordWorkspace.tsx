@@ -280,7 +280,7 @@ export const MedicalRecordWorkspace = React.memo(function MedicalRecordWorkspace
             return true;
         } catch (error) {
             console.error('Auto-save before proceed error:', error);
-            toast.error('Kh?ng th? t? ??ng l?u d? li?u tr??c khi ti?p t?c.');
+            toast.error('Không thể tự động lưu dữ liệu trước khi tiếp tục.');
             return false;
         }
     };
@@ -772,6 +772,17 @@ export const MedicalRecordWorkspace = React.memo(function MedicalRecordWorkspace
                                         className="min-h-[120px]"
                                     />
                                 </Field>
+                                <div className="mt-4">
+                                    <Field label="Đánh giá của bác sĩ">
+                                        <Textarea
+                                            value={medicalRecord?.assessment || ''}
+                                            placeholder="Nhập đánh giá của bác sĩ..."
+                                            onChange={(e) => onUpdateRecord('assessment', e.target.value)}
+                                            disabled={!canEdit}
+                                            className="min-h-[140px]"
+                                        />
+                                    </Field>
+                                </div>
 
                                 <div className="mt-4">
                                     <Field label="Kế hoạch điều trị">
