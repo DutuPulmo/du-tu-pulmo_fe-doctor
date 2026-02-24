@@ -9,8 +9,8 @@ export function DashboardLayout() {
         <div className="flex h-screen bg-gray-50 overflow-hidden">
             <Sidebar collapsed={sidebarCollapsed} />
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-                <main className="flex-1 overflow-y-auto">
-                    <div className="container mx-auto p-6 max-w-7xl">
+                <main className="flex-1 flex flex-col relative overflow-y-auto">
+                    <div className="container mx-auto p-6 max-w-7xl flex-1 flex flex-col min-h-0">
                         <Outlet />
                     </div>
                 </main>
