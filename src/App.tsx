@@ -12,7 +12,9 @@ const TimeSlotsPage = lazy(() => import('@/pages/schedule/TimeSlotsPage').then(m
 
 // New Pages
 const ReceptionPage = lazy(() => import('@/pages/reception/ReceptionPage'));
-const QueuePage = lazy(() => import('@/pages/reception/QueuePage'));
+const QueueManagerPage = lazy(() => import('@/pages/doctor/QueueManagerPage'));
+const InClinicExamPage = lazy(() => import('@/pages/doctor/encounters/InClinicExamPage'));
+const VideoExamPage = lazy(() => import('@/pages/doctor/encounters/VideoExamPage'));
 const TodaySchedulePage = lazy(() => import('@/pages/reception/TodaySchedulePage'));
 const VideoWaitingPage = lazy(() => import('@/pages/consultation/VideoWaitingPage'));
 const ChatPage = lazy(() => import('@/pages/consultation/ChatPage'));
@@ -32,10 +34,14 @@ const AboutPage = lazy(() => import('@/pages/help/AboutPage'));
 // Detail Pages
 const PatientDetailPage = lazy(() => import('@/pages/records/PatientDetailPage'));
 const AppointmentDetailPage = lazy(() => import('@/pages/appointment/AppointmentDetailPage'));
+const MedicalRecordDetailPage = lazy(() => import('@/pages/records/MedicalRecordDetailPage'));
+const PrescriptionDetailPage = lazy(() => import('@/pages/records/PrescriptionDetailPage'));
 
 // Auth & Settings
 const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'));
 const ProfilePage = lazy(() => import('@/pages/settings/ProfilePage'));
+const SettingsPage = lazy(() => import('@/pages/settings/SettingsPage'));
+const NotificationsPage = lazy(() => import('@/pages/notifications/NotificationsPage'));
 
 // Error Pages
 const NotFoundPage = lazy(() => import('@/pages/error/NotFoundPage'));
@@ -71,7 +77,7 @@ function App() {
 
           {/* Protected Routes */}
           <Route path="/doctor" element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={['DOCTOR', 'RECEPTIONIST']}>
               <DashboardLayout />
             </ProtectedRoute>
           }>
@@ -80,9 +86,18 @@ function App() {
             {/* Dashboard */}
             <Route path="overview" element={<OverviewPage />} />
 
-            {/* Phòng Khám */}
-            <Route path="reception" element={<ReceptionPage />} />
-            <Route path="queue" element={<QueuePage />} />
+            {/* Phòng Khám - Reception Only */}
+            <Route path="reception" element={
+              <ProtectedRoute allowedRoles={['RECEPTIONIST']}>
+                <ReceptionPage />
+              </ProtectedRoute>
+            } />
+            {/* <Route path="queue" element={...} /> removed */}
+            <Route path="queue-manager" element={
+              <ProtectedRoute allowedRoles={['DOCTOR']}>
+                <QueueManagerPage />
+              </ProtectedRoute>
+            } />
             <Route path="today" element={<TodaySchedulePage />} />
 
             {/* Tư Vấn Trực Tuyến */}
@@ -98,12 +113,18 @@ function App() {
 
             {/* Hồ Sơ */}
             <Route path="medical-records" element={<MedicalRecordPage />} />
+            <Route path="medical-records/:id" element={<MedicalRecordDetailPage />} />
             <Route path="patients" element={<PatientListPage />} />
             <Route path="patients/:id" element={<PatientDetailPage />} />
             <Route path="prescriptions" element={<PrescriptionPage />} />
+            <Route path="prescriptions/:id" element={<PrescriptionDetailPage />} />
 
             {/* Cận Lâm Sàng */}
             <Route path="ai-xray" element={<AiXrayPage />} />
+
+            {/* In-Clinic Encounter - ADDED */}
+            <Route path="encounters/:appointmentId/in-clinic" element={<InClinicExamPage />} />
+            <Route path="encounters/:appointmentId/video" element={<VideoExamPage />} />
 
             {/* Thuốc & Điều Trị */}
             <Route path="medicine" element={<MedicinePage />} />
@@ -120,6 +141,8 @@ function App() {
 
             {/* Settings */}
             <Route path="profile" element={<ProfilePage />} />
+            <Route path="settings" element={<SettingsPage />} />
+            <Route path="notifications" element={<NotificationsPage />} />
 
             <Route path="*" element={<Navigate to="/404" replace />} />
           </Route>

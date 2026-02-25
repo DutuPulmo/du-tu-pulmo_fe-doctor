@@ -287,20 +287,26 @@ export function RegularScheduleModal({ open, onClose, schedules, onSave }: Regul
             : 'border-green-200';
     };
 
+    const getTypeSwitchColor = () => {
+        return appointmentType === AppointmentType.IN_CLINIC
+            ? 'data-[state=checked]:bg-blue-600'
+            : 'data-[state=checked]:bg-green-600';
+    };
+
     const getSlotCardStyle = (isSaved: boolean) => {
-        if (!isSaved) return "bg-gray-50 border-gray-200 border-dashed"; // Mới: Nền xám, viền nét đứt
+        if (!isSaved) return "bg-gray-50 border-gray-200 border-dashed";
 
         return appointmentType === AppointmentType.IN_CLINIC
-            ? "bg-blue-50 border-blue-200"
-            : "bg-green-50 border-green-200";
+            ? "bg-blue-100/80 border-blue-200"
+            : "bg-green-100/80 border-green-200";
     };
 
     const getBadgeStyle = (isSaved: boolean) => {
         if (!isSaved) return "bg-yellow-100 text-yellow-800 border-yellow-200"; // Mới: Màu vàng
 
         return appointmentType === AppointmentType.IN_CLINIC
-            ? "bg-blue-100 text-blue-800 border-blue-200"
-            : "bg-green-100 text-green-800 border-green-200";
+            ? "bg-blue-150 text-blue-800 border-blue-200"
+            : "bg-green-150 text-green-800 border-green-200";
     };
 
     return (
@@ -344,6 +350,8 @@ export function RegularScheduleModal({ open, onClose, schedules, onSave }: Regul
                                     <Switch
                                         checked={day.enabled}
                                         onCheckedChange={(checked) => toggleDay(day.dayOfWeek, checked)}
+                                        //màu dựa theo loại type
+                                        className={cn(getTypeSwitchColor())}
                                     />
                                     <div>
                                         <div className="font-medium">{getDayLabel(day.dayOfWeek)}</div>
