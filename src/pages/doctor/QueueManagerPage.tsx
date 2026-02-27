@@ -42,7 +42,7 @@ export default function QueueManagerPage() {
         startDate,
         endDate
     });
-    const completedToday = completedData?.data || [];
+    const completedToday = completedData?.items || [];
 
     const getEncounterRoute = (id: string, type?: string) =>
         type === 'VIDEO'

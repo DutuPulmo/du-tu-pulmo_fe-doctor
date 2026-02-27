@@ -26,7 +26,7 @@ export const ReceptionPage = () => {
         search,
     });
 
-    const appointments = appointmentData?.data || [];
+    const appointments = appointmentData?.items || [];
 
     const handleCheckIn = async (id: string) => {
         setCheckInLoading(id);
@@ -108,7 +108,7 @@ export const ReceptionPage = () => {
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            appointments.map((apt) => (
+                            appointments.map((apt: any) => (
                                 <TableRow key={apt.id}>
                                     <TableCell>
                                         <div className="flex flex-col">
