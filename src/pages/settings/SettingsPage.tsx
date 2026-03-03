@@ -1,65 +1,62 @@
-
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 
 export default function SettingsPage() {
-    return (
-        <div className="space-y-6">
-            <PageHeader
-                title="Cài đặt"
-                subtitle="Quản lý cấu hình và tùy chọn cá nhân"
+  const navigate = useNavigate();
+  const [emailNotifications, setEmailNotifications] = useState(true);
+  const [systemNotifications, setSystemNotifications] = useState(true);
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Cài đặt"
+        subtitle="Tùy chọn tối giản cho bảo mật và thông báo"
+      />
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Bảo mật tài khoản</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-gray-600">
+
+          </p>
+          <Button variant="outline" onClick={() => navigate('/forgot-password')}>
+            Mở trang đổi mật khẩu
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Tùy chọn thông báo</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+
+          <div className="flex items-center justify-between">
+            <Label htmlFor="system-noti">Thông báo trong hệ thống</Label>
+            <Switch
+              id="system-noti"
+              checked={systemNotifications}
+              onCheckedChange={setSystemNotifications}
             />
+          </div>
 
-            <div className="grid gap-6">
-                {/* General Settings */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Cài đặt chung</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="language">Ngôn ngữ</Label>
-                            <Input id="language" defaultValue="Tiếng Việt" disabled />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="timezone">Múi giờ</Label>
-                            <Input id="timezone" defaultValue="(GMT+07:00) Bangkok, Hanoi, Jakarta" disabled />
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* Account Security */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Bảo mật tài khoản</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="flex items-center justify-between">
-                            <div className="space-y-0.5">
-                                <Label>Đổi mật khẩu</Label>
-                                <p className="text-sm text-muted-foreground">
-                                    Cập nhật mật khẩu định kỳ để bảo vệ tài khoản
-                                </p>
-                            </div>
-                            <Button variant="outline">Đổi mật khẩu</Button>
-                        </div>
-                        <Separator />
-                        <div className="flex items-center justify-between">
-                            <div className="space-y-0.5">
-                                <Label>Xác thực 2 lớp</Label>
-                                <p className="text-sm text-muted-foreground">
-                                    Tăng cường bảo mật với xác thực qua SMS/Email
-                                </p>
-                            </div>
-                            <Button variant="outline" disabled>Sắp ra mắt</Button>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-        </div>
-    );
+          <div className="flex items-center justify-between">
+            <Label htmlFor="email-noti">Thông báo qua email</Label>
+            <Switch
+              id="email-noti"
+              checked={emailNotifications}
+              onCheckedChange={setEmailNotifications}
+            />
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }
