@@ -12,6 +12,7 @@ import type {
   CreateVitalSignDto,
 } from '@/types/medical';
 import type { UploadAnalyzeResponse } from '@/types/screening';
+import screeningService from '@/services/screening.service';
 
 const normalizeMedicalRecord = (record: MedicalRecord): MedicalRecord => {
   const presentIllness =
@@ -194,28 +195,15 @@ export const medicalService = {
     patientId: string,
     file: File,
     screeningId?: string,
-    modelVersion?: string,
+    _modelVersion?: string,
     medicalRecordId?: string
   ): Promise<UploadAnalyzeResponse> => {
-    const formData = new FormData();
-    formData.append('image', file);
-    formData.append('patientId', patientId);
-    if (screeningId) {
-      formData.append('screeningId', screeningId);
-    }
-    if (modelVersion) {
-      formData.append('modelVersion', modelVersion);
-    }
-    if (medicalRecordId) {
-      formData.append('medicalRecordId', medicalRecordId);
-    }
-    
-    const response = await api.post<UploadAnalyzeResponse>(`/screenings/workflow/xray-analyze`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+    return screeningService.uploadAndAnalyze({
+      patientId,
+      image: file,
+      screeningId,
+      medicalRecordId,
     });
-    return response.data;
   },
 
   // ============================================
