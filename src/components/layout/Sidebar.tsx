@@ -8,13 +8,14 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useState } from 'react';
 import { getUser } from '@/lib/auth';
+import { Bell } from 'lucide-react';
+import { useUnreadNotificationCount } from '@/hooks/use-notifications';
 import {
     DashboardIcon,
     ReceptionIcon,
     CalendarTodayIcon,
     VideoCallIcon,
     ChatIcon,
-    HistoryIcon,
     CalendarIcon,
     ScheduleIcon,
     TimeSlotIcon,
@@ -23,9 +24,7 @@ import {
     PrescriptionIcon,
     AIBrainIcon,
     MedicineCabinetIcon,
-    ProtocolIcon,
     ReportIcon,
-    BillingIcon,
     HelpIcon,
     InfoIcon,
     ChevronDownIcon,
@@ -54,6 +53,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
     const [openSections, setOpenSections] = useState<string[]>(['phongKham', 'hoSo']);
     const user = getUser();
     const userRoles = user?.roles || [];
+    const { data: unreadCount = 0 } = useUnreadNotificationCount();
 
     // Check if user has required role
     const hasRole = (allowedRoles?: string[]) => {
@@ -63,10 +63,6 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
 
     // Helper to filter nav items
     const filterNav = (items: NavItem[]) => items.filter(item => hasRole(item.allowedRoles));
-
-    // Fetch queue count for badge (TODO: Re-enable when badge usage is implemented)
-    // const { data: queueData } = useGetMyQueue();
-    // const queueCount = queueData?.totalInQueue || 0;
 
     // ==================== MENU STRUCTURE ====================
 
@@ -108,23 +104,17 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
     // 3. TƯ VẤN TRỰC TUYẾN
     const tuVanNav: NavItem[] = [
         {
-            name: 'Phòng Chờ Video',
-            href: '/doctor/video-waiting',
-            icon: VideoCallIcon,
-            allowedRoles: ['DOCTOR'],
-        },
-        {
             name: 'Tin Nhắn',
             href: '/doctor/chat',
             icon: ChatIcon,
             allowedRoles: ['DOCTOR'],
         },
         {
-            name: 'Lịch Sử Cuộc Gọi',
-            href: '/doctor/video-history',
-            icon: HistoryIcon,
+            name: 'Danh sách screening',
+            href: '/doctor/screenings',
+            icon: AIBrainIcon,
             allowedRoles: ['DOCTOR'],
-        },
+        }
     ];
 
     // 4. ĐẶT KHÁM THÔNG MINH
@@ -189,29 +179,17 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
             href: '/doctor/medicine',
             icon: MedicineCabinetIcon,
             allowedRoles: ['DOCTOR'],
-        },
-        {
-            name: 'Phác Đồ Điều Trị',
-            href: '/doctor/protocols',
-            icon: ProtocolIcon,
-            allowedRoles: ['DOCTOR'],
-        },
+        }
     ];
 
-    // 8. BÁO CÁO & THỐNG KÊ
+    // 8. BÁO CÁO
     const baoCaoNav: NavItem[] = [
         {
-            name: 'Báo Cáo',
-            href: '/doctor/reports',
+            name: 'Báo Cáo Sự Cố',
+            href: '/doctor/issue-reports',
             icon: ReportIcon,
             allowedRoles: ['DOCTOR', 'ADMIN'],
-        },
-        {
-            name: 'Hóa Đơn',
-            href: '/doctor/billing',
-            icon: BillingIcon,
-            allowedRoles: ['DOCTOR', 'RECEPTIONIST'],
-        },
+        }
     ];
 
     // ==================== HANDLERS ====================
@@ -403,12 +381,26 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
                     {filterNav(baoCaoNav).length > 0 && (
                         <div className="pt-4">
                             {renderSectionHeader('Báo Cáo', baoCaoNav)}
-                            {renderCollapsibleSection('Thống Kê', 'baoCao', ReportIcon, baoCaoNav)}
+                            {renderCollapsibleSection('Báo cáo Sự cố', 'baoCao', ReportIcon, baoCaoNav)}
                         </div>
                     )}
 
                     {/* Thông Tin */}
                     <div className="pt-4 border-t border-gray-100 mt-4">
+                        <Link
+                            to="/doctor/notifications"
+                            className={`flex items-center rounded-lg px-3 py-2 text-sm font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors ${collapsed ? 'justify-center' : 'justify-between'}`}
+                        >
+                            <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'}`}>
+                                <Bell className="h-4 w-4" />
+                                <span className={`${textBaseClass} ${textClass}`}>Thông báo</span>
+                            </div>
+                            {!collapsed && unreadCount > 0 && (
+                                <Badge className="bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] text-center">
+                                    {unreadCount > 99 ? '99+' : unreadCount}
+                                </Badge>
+                            )}
+                        </Link>
                         <Link
                             to="/doctor/help"
                             className={`flex items-center rounded-lg px-3 py-2 text-sm font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors ${collapsed ? 'justify-center' : 'gap-3'}`}

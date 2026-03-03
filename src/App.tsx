@@ -11,23 +11,21 @@ const SchedulePage = lazy(() => import('@/pages/schedule/SchedulePage').then(mod
 const TimeSlotsPage = lazy(() => import('@/pages/schedule/TimeSlotsPage').then(module => ({ default: module.TimeSlotsPage })));
 
 // New Pages
-const ReceptionPage = lazy(() => import('@/pages/reception/ReceptionPage'));
+// const ReceptionPage = lazy(() => import('@/pages/reception/ReceptionPage'));
 const QueueManagerPage = lazy(() => import('@/pages/doctor/QueueManagerPage'));
 const InClinicExamPage = lazy(() => import('@/pages/doctor/encounters/InClinicExamPage'));
 const VideoExamPage = lazy(() => import('@/pages/doctor/encounters/VideoExamPage'));
 const TodaySchedulePage = lazy(() => import('@/pages/reception/TodaySchedulePage'));
-const VideoWaitingPage = lazy(() => import('@/pages/consultation/VideoWaitingPage'));
 const ChatPage = lazy(() => import('@/pages/consultation/ChatPage'));
-const VideoHistoryPage = lazy(() => import('@/pages/consultation/VideoHistoryPage'));
 const AppointmentListPage = lazy(() => import('@/pages/appointment/AppointmentListPage'));
 const MedicalRecordPage = lazy(() => import('@/pages/records/MedicalRecordPage'));
 const PatientListPage = lazy(() => import('@/pages/records/PatientListPage'));
 const PrescriptionPage = lazy(() => import('@/pages/records/PrescriptionPage'));
 const AiXrayPage = lazy(() => import('@/pages/clinical/AiXrayPage'));
+const ScreeningListPage = lazy(() => import('@/pages/clinical/ScreeningListPage'));
+const ScreeningDetailPage = lazy(() => import('@/pages/clinical/ScreeningDetailPage'));
 const MedicinePage = lazy(() => import('@/pages/treatment/MedicinePage'));
-const ProtocolPage = lazy(() => import('@/pages/treatment/ProtocolPage'));
-const ReportPage = lazy(() => import('@/pages/reports/ReportPage'));
-const BillingPage = lazy(() => import('@/pages/reports/BillingPage'));
+const IssueReportPage = lazy(() => import('@/pages/issue-reports/IssueReportPage'));
 const HelpPage = lazy(() => import('@/pages/help/HelpPage'));
 const AboutPage = lazy(() => import('@/pages/help/AboutPage'));
 
@@ -77,7 +75,7 @@ function App() {
 
           {/* Protected Routes */}
           <Route path="/doctor" element={
-            <ProtectedRoute allowedRoles={['DOCTOR', 'RECEPTIONIST']}>
+            <ProtectedRoute allowedRoles={['DOCTOR']}>
               <DashboardLayout />
             </ProtectedRoute>
           }>
@@ -87,12 +85,11 @@ function App() {
             <Route path="overview" element={<OverviewPage />} />
 
             {/* Phòng Khám - Reception Only */}
-            <Route path="reception" element={
+            {/* <Route path="reception" element={
               <ProtectedRoute allowedRoles={['RECEPTIONIST']}>
                 <ReceptionPage />
               </ProtectedRoute>
-            } />
-            {/* <Route path="queue" element={...} /> removed */}
+            } /> */}
             <Route path="queue-manager" element={
               <ProtectedRoute allowedRoles={['DOCTOR']}>
                 <QueueManagerPage />
@@ -101,9 +98,7 @@ function App() {
             <Route path="today" element={<TodaySchedulePage />} />
 
             {/* Tư Vấn Trực Tuyến */}
-            <Route path="video-waiting" element={<VideoWaitingPage />} />
             <Route path="chat" element={<ChatPage />} />
-            <Route path="video-history" element={<VideoHistoryPage />} />
 
             {/* Đặt Khám */}
             <Route path="appointments" element={<AppointmentListPage />} />
@@ -121,6 +116,8 @@ function App() {
 
             {/* Cận Lâm Sàng */}
             <Route path="ai-xray" element={<AiXrayPage />} />
+            <Route path="screenings" element={<ScreeningListPage />} />
+            <Route path="screenings/:id" element={<ScreeningDetailPage />} />
 
             {/* In-Clinic Encounter - ADDED */}
             <Route path="encounters/:appointmentId/in-clinic" element={<InClinicExamPage />} />
@@ -128,11 +125,9 @@ function App() {
 
             {/* Thuốc & Điều Trị */}
             <Route path="medicine" element={<MedicinePage />} />
-            <Route path="protocols" element={<ProtocolPage />} />
 
-            {/* Báo Cáo */}
-            <Route path="reports" element={<ReportPage />} />
-            <Route path="billing" element={<BillingPage />} />
+            {/* Báo Cáo Sự Cố */}
+            <Route path="issue-reports" element={<IssueReportPage />} />
 
             {/* Thông Tin */}
             <Route path="help" element={<HelpPage />} />

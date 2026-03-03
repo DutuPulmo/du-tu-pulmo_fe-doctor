@@ -21,7 +21,6 @@ export function DashboardLayout() {
 
 export function useDashboardLayout() {
     const { sidebarCollapsed, toggleSidebar } = useAppStore();
-    // Placeholder for setTitle if not in store yet, or extend store
     const setTitle = (title: string) => {
         document.title = title ? `${title} - Doctor Portal` : 'Doctor Portal';
     };

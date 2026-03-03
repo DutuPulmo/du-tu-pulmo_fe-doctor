@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { getUser, logout } from '@/lib/auth';
 import { HeaderUserMenu } from '@/components/layout/HeaderUserMenu';
 import { useAppStore } from '@/store/useAppStore';
+import { useUnreadNotificationCount } from '@/hooks/use-notifications';
 
 interface PageHeaderProps {
     title: React.ReactNode;
@@ -21,7 +22,7 @@ export function PageHeader({
     title,
     subtitle,
     rightSlot,
-    notificationCount = 3,
+    notificationCount,
     onProfile,
     onSettings,
     onLogout,
@@ -40,6 +41,9 @@ export function PageHeader({
     });
 
     const displayName = user?.fullName || 'Bác sĩ';
+
+    const { data: unreadCount = 0 } = useUnreadNotificationCount();
+
 
     return (
         <div className={cn('flex items-center justify-between gap-4', className)}>
@@ -61,7 +65,7 @@ export function PageHeader({
                         avatarUrl: user?.avatarUrl,
                         roleLabel: user?.roles?.[0] || 'Bác sĩ',
                     }}
-                    notificationCount={notificationCount}
+                    notificationCount={notificationCount ?? unreadCount}
                     onProfile={handleProfile}
                     onSettings={handleSettings}
                     onLogout={handleLogout}

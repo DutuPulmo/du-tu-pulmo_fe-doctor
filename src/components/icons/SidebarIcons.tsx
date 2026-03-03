@@ -72,14 +72,6 @@ export const ChatIcon: React.FC<IconProps> = ({ className }) => (
     </svg>
 );
 
-// History Icon - Slate
-export const HistoryIcon: React.FC<IconProps> = ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 3v5h5" stroke="#64748B" />
-        <circle cx="12" cy="12" r="9" fill="#F1F5F9" stroke="#64748B" />
-        <path d="M12 7v5l4 2" stroke="#475569" />
-    </svg>
-);
 
 // Calendar/Appointment Icon - Blue
 export const CalendarIcon: React.FC<IconProps> = ({ className }) => (
@@ -213,15 +205,6 @@ export const MedicineCabinetIcon: React.FC<IconProps> = ({ className }) => (
     </svg>
 );
 
-// Protocol/Book Icon - Indigo
-export const ProtocolIcon: React.FC<IconProps> = ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" fill="#E0E7FF" stroke="#6366F1" />
-        <path d="M8 7h6" stroke="#4F46E5" strokeWidth="2" />
-        <path d="M8 11h8" stroke="#818CF8" strokeWidth="2" />
-    </svg>
-);
-
 // News Icon - Orange
 export const NewsIcon: React.FC<IconProps> = ({ className }) => (
     <svg className={className} viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -248,16 +231,6 @@ export const ReportIcon: React.FC<IconProps> = ({ className }) => (
         <line x1="6" y1="20" x2="6" y2="16" stroke="#3B82F6" strokeWidth="3" strokeLinecap="round" />
         <line x1="12" y1="20" x2="12" y2="10" stroke="#60A5FA" strokeWidth="3" strokeLinecap="round" />
         <line x1="18" y1="20" x2="18" y2="4" stroke="#93C5FD" strokeWidth="3" strokeLinecap="round" />
-    </svg>
-);
-
-// Billing/Receipt Icon - Green
-export const BillingIcon: React.FC<IconProps> = ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z" fill="#DCFCE7" stroke="#22C55E" />
-        <path d="M8 7h8" stroke="#16A34A" strokeWidth="2" />
-        <path d="M8 11h8" stroke="#4ADE80" />
-        <path d="M8 15h5" stroke="#86EFAC" />
     </svg>
 );
 
