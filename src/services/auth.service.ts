@@ -30,4 +30,19 @@ export const authService = {
     });
     return response.data;
   },
+
+   addFcmToken: async (token: string): Promise<void> => {
+      await api.post('/users/me/fcm-token', { token });
+    },
+  
+    removeFcmToken: async (token: string): Promise<void> => {
+      await api.delete('/users/me/fcm-token', { data: { token } });
+    },
+  
+    testPushNotification: async (): Promise<void> => {
+      await api.post('/notifications/test-push', {
+        title: '🎉 Test Push Notification',
+        content: 'Hello từ Patient Portal! Đây là thông báo đẩy thử nghiệm.',
+      });
+    },
 };

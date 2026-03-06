@@ -74,18 +74,20 @@ api.interceptors.response.use(
   },
   async (error: AxiosError<unknown>) => {
     const originalRequest = error.config;
-    
+
+    // ✅ Bỏ qua refresh logic cho login endpoint
+    const isLoginRequest = originalRequest?.url?.includes('/auth/login');
+
     // @ts-expect-error - _retry is custom property
-    if (error.response?.status === 401 && !originalRequest?._retry) {
-      
-      // If already refreshing, queue this request
+    if (error.response?.status === 401 && !originalRequest?._retry && !isLoginRequest) {
+
       if (isRefreshing) {
         return new Promise(function (resolve, reject) {
           failedQueue.push({ resolve, reject });
         })
           .then((token) => {
             if (originalRequest && originalRequest.headers) {
-               originalRequest.headers.Authorization = 'Bearer ' + token;
+              originalRequest.headers.Authorization = 'Bearer ' + token;
             }
             return api(originalRequest!);
           })
@@ -94,22 +96,20 @@ api.interceptors.response.use(
           });
       }
 
-      // @ts-expect-error: _retry is a custom property added to the request configuration for interceptors
+      // @ts-expect-error: _retry is a custom property
       originalRequest._retry = true;
       isRefreshing = true;
 
       const refreshToken = getRefreshToken();
 
       if (!refreshToken) {
-        // No refresh token -> Logout
         logout();
         if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-             window.location.href = '/login';
+          window.location.href = '/login';
         }
         return Promise.reject(error);
       }
 
-      // Attempt to refresh
       try {
         const { data } = await axios.post(`${API_BASE_URL}/auth/refresh`, {
           refreshToken,
@@ -120,29 +120,29 @@ api.interceptors.response.use(
 
         if (newAccessToken) {
           setToken(newAccessToken);
-          
+
           if (newRefreshToken) {
-             setRefreshToken(newRefreshToken); 
+            setRefreshToken(newRefreshToken);
           }
 
           api.defaults.headers.common['Authorization'] = 'Bearer ' + newAccessToken;
-          
+
           if (originalRequest && originalRequest.headers) {
-             originalRequest.headers.Authorization = 'Bearer ' + newAccessToken;
+            originalRequest.headers.Authorization = 'Bearer ' + newAccessToken;
           }
 
           processQueue(null, newAccessToken);
-          
+
           return api(originalRequest!);
         } else {
-           throw new Error('Refresh failed - No access token returned');
+          throw new Error('Refresh failed - No access token returned');
         }
       } catch (refreshError) {
         processQueue(refreshError, null);
         logout();
         toast.error('Phiên đăng nhập hết hạn, vui lòng đăng nhập lại');
         if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-             window.location.href = '/login';
+          window.location.href = '/login';
         }
         return Promise.reject(refreshError);
       } finally {
@@ -150,34 +150,33 @@ api.interceptors.response.use(
       }
     }
 
-    // Standard error handling for non-401 or failed retry
+    // Standard error handling
     const statusCode = error.response?.status ?? 0;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const responseData = error.response?.data as any;
 
-    // NestJS message
     const rawMsg = responseData?.message;
     const normalizedMsg =
       Array.isArray(rawMsg) ? rawMsg.join(', ') : (rawMsg ?? error.message ?? 'Lỗi kết nối server');
 
-    // Toast
-    if (statusCode !== 401) { 
-        switch (statusCode) {
-        case 400:
-            toast.error(`Yêu cầu không hợp lệ: ${normalizedMsg}`);
-            break;
-        case 403:
-            toast.error('Bạn không có quyền thực hiện thao tác này');
-            break;
-        case 404:
-            toast.error('Không tìm thấy dữ liệu');
-            break;
-        case 500:
-            toast.error('Lỗi hệ thống, vui lòng thử lại sau');
-            break;
-        default:
-            toast.error(normalizedMsg);
-        }
+    switch (statusCode) {
+      case 400:
+        toast.error(`Yêu cầu không hợp lệ: ${normalizedMsg}`);
+        break;
+      case 401:
+        if (isLoginRequest) toast.error('Sai thông tin đăng nhập');
+        break;
+      case 403:
+        toast.error('Bạn không có quyền thực hiện thao tác này');
+        break;
+      case 404:
+        toast.error('Không tìm thấy dữ liệu');
+        break;
+      case 500:
+        toast.error('Lỗi hệ thống, vui lòng thử lại sau');
+        break;
+      default:
+        toast.error(normalizedMsg);
     }
 
     return Promise.reject({

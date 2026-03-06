@@ -2,10 +2,13 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { PanelLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { getUser, logout } from '@/lib/auth';
+import { logout } from '@/lib/auth';
 import { HeaderUserMenu } from '@/components/layout/HeaderUserMenu';
 import { useAppStore } from '@/store/useAppStore';
 import { useUnreadNotificationCount } from '@/hooks/use-notifications';
+import { authService } from '@/services/auth.service';
+import { clearFcmToken, getFcmToken } from '@/hooks/use-fcm-token';
+import { useLogout } from '@/hooks/use-auth';
 
 interface PageHeaderProps {
     title: React.ReactNode;
@@ -28,22 +31,30 @@ export function PageHeader({
     onLogout,
     className,
 }: PageHeaderProps) {
-    const { toggleSidebar } = useAppStore();
+    const { toggleSidebar, user } = useAppStore();
     const navigate = useNavigate();
-    const user = getUser();
+    const { data: unreadCount = 0 } = useUnreadNotificationCount();
+    const displayName = user?.fullName || 'Bác sĩ';
 
     const handleProfile = onProfile ?? (() => navigate('/doctor/profile'));
     const handleSettings = onSettings ?? (() => navigate('/doctor/settings'));
     const handleNotifications = () => navigate('/doctor/notifications');
-    const handleLogout = onLogout ?? (() => {
-        logout();
-        navigate('/login');
+
+    const { mutateAsync: logoutMutation } = useLogout();
+
+    const handleLogout = onLogout ?? (async () => {
+        const fcmToken = getFcmToken();
+        try {
+            if (fcmToken) await authService.removeFcmToken(fcmToken);
+            clearFcmToken();
+            await logoutMutation();
+        } catch (error) {
+            console.error('Logout error:', error);
+        } finally {
+            logout();
+            navigate('/login', { replace: true });
+        }
     });
-
-    const displayName = user?.fullName || 'Bác sĩ';
-
-    const { data: unreadCount = 0 } = useUnreadNotificationCount();
-
 
     return (
         <div className={cn('flex items-center justify-between gap-4', className)}>

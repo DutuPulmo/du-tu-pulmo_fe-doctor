@@ -1,9 +1,11 @@
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { useAppStore } from '@/store/useAppStore';
+import { useFcmToken } from '@/hooks/use-fcm-token';
 
 export function DashboardLayout() {
-    const { sidebarCollapsed } = useAppStore();
+    const { sidebarCollapsed, user } = useAppStore();
+    useFcmToken(!!user);
 
     return (
         <div className="flex h-screen bg-gray-50 overflow-hidden">
