@@ -43,7 +43,7 @@ export default function MedicalRecordDetailPage() {
         queryFn: () => medicalService.getDetail(id!),
         enabled: !!id,
     });
-
+    
     const patientInfo = record ? {
         fullName: record.patient.fullName,
         gender: record.patient.gender === 'MALE' ? 'Nam' : 'Nữ',
@@ -638,6 +638,16 @@ export default function MedicalRecordDetailPage() {
                                                     onChange={(e) => handleInputChange('allergies', e.target.value.split('\n'))}
                                                     rows={3}
                                                     placeholder="Nhập dị ứng (mỗi dòng một loại)..."
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Thuốc hiện tại đang sử dụng</label>
+                                                <textarea
+                                                    value={Array.isArray(formData.currentMedications) ? formData.currentMedications.join('\n') : (formData.currentMedications || '')}
+                                                    onChange={(e) => handleInputChange('currentMedications', e.target.value.split('\n'))}
+                                                    rows={3}
+                                                    placeholder="Nhập thuốc hiện tại đang sử dụng (mỗi dòng một loại)..."
                                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                                                 />
                                             </div>
