@@ -14,7 +14,6 @@ import {
     DashboardIcon,
     ReceptionIcon,
     CalendarTodayIcon,
-    VideoCallIcon,
     ChatIcon,
     CalendarIcon,
     ScheduleIcon,
@@ -31,7 +30,6 @@ import {
     ChevronRightIcon,
     FolderIcon,
     ClipboardListIcon,
-    PillIcon,
 } from '@/components/icons/SidebarIcons';
 
 interface NavItem {
@@ -50,7 +48,7 @@ interface SidebarProps {
 
 export function Sidebar({ collapsed = false }: SidebarProps) {
     const location = useLocation();
-    const [openSections, setOpenSections] = useState<string[]>(['phongKham', 'hoSo']);
+    const [openSections, setOpenSections] = useState<string[]>(['khamBenh', 'hoSo']);
     const user = getUser();
     const userRoles = user?.roles || [];
     const { data: unreadCount = 0 } = useNotificationUnreadCount();
@@ -77,8 +75,8 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
         },
     ];
 
-    // 2. PHÒNG KHÁM
-    const phongKhamNav: NavItem[] = [
+    // 2. KHÁM BỆNH (Clinical)
+    const khamBenhNav: NavItem[] = [
         {
             name: 'Tiếp nhận',
             href: '/doctor/reception',
@@ -87,34 +85,30 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
             allowedRoles: ['RECEPTIONIST'],
         },
         {
-            name: 'Quản Lý Khám',
+            name: 'Hàng Đợi Khám',
             href: '/doctor/queue-manager',
             icon: ClipboardListIcon,
             description: 'Bảng quản lý khám bệnh',
             allowedRoles: ['DOCTOR'],
         },
         {
-            name: 'Lịch Hôm Nay',
+            name: 'Lịch Khám Hôm Nay',
             href: '/doctor/today',
             icon: CalendarTodayIcon,
             allowedRoles: ['RECEPTIONIST', 'DOCTOR'],
         },
-    ];
-
-    // 3. TƯ VẤN TRỰC TUYẾN
-    const tuVanNav: NavItem[] = [
         {
-            name: 'Tin Nhắn',
+            name: 'Tư Vấn & Chat',
             href: '/doctor/chat',
             icon: ChatIcon,
             allowedRoles: ['DOCTOR'],
-        }
+        },
     ];
 
-    // 4. ĐẶT KHÁM THÔNG MINH
-    const datKhamNav: NavItem[] = [
+    // 3. LỊCH HẸN & LỊCH LÀM VIỆC (Scheduling)
+    const lichHenNav: NavItem[] = [
         {
-            name: 'Lịch Hẹn',
+            name: 'Danh Sách Lịch Hẹn',
             href: '/doctor/appointments',
             icon: CalendarIcon,
             allowedRoles: ['DOCTOR'],
@@ -133,18 +127,18 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
         },
     ];
 
-    // 5. HỒ SƠ
+    // 4. HỒ SƠ & BỆNH NHÂN (Records)
     const hoSoNav: NavItem[] = [
-        {
-            name: 'Bệnh Án Điện Tử',
-            href: '/doctor/medical-records',
-            icon: MedicalRecordIcon,
-            allowedRoles: ['DOCTOR'],
-        },
         {
             name: 'Bệnh Nhân',
             href: '/doctor/patients',
             icon: PatientIcon,
+            allowedRoles: ['DOCTOR'],
+        },
+        {
+            name: 'Bệnh Án Điện Tử',
+            href: '/doctor/medical-records',
+            icon: MedicalRecordIcon,
             allowedRoles: ['DOCTOR'],
         },
         {
@@ -155,8 +149,8 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
         },
     ];
 
-    // 6. CẬN LÂM SÀNG
-    const canLamSangNav: NavItem[] = [
+    // 5. CÔNG CỤ AI (AI Tools)
+    const aiToolsNav: NavItem[] = [
         {
             name: 'AI X-Quang Phổi',
             href: '/doctor/ai-xray',
@@ -165,25 +159,21 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
             allowedRoles: ['DOCTOR'],
         },
         {
-            name: 'Danh sách screening',
+            name: 'Danh Sách Sàng Lọc',
             href: '/doctor/screenings',
             icon: AIBrainIcon,
             allowedRoles: ['DOCTOR'],
         }
     ];
 
-    // 7. THUỐC & ĐIỀU TRỊ
-    const thuocNav: NavItem[] = [
+    // 6. KHÁC (Others)
+    const khacNav: NavItem[] = [
         {
             name: 'Tủ Thuốc Phổi',
             href: '/doctor/medicine',
             icon: MedicineCabinetIcon,
             allowedRoles: ['DOCTOR'],
-        }
-    ];
-
-    // 8. BÁO CÁO
-    const baoCaoNav: NavItem[] = [
+        },
         {
             name: 'Báo Cáo Sự Cố',
             href: '/doctor/issue-reports',
@@ -329,27 +319,19 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
                         </div>
                     )}
 
-                    {/* 2. Phòng Khám */}
-                    {filterNav(phongKhamNav).length > 0 && (
+                    {/* 2. Khám Bệnh */}
+                    {filterNav(khamBenhNav).length > 0 && (
                         <div className="pt-4">
-                            {renderSectionHeader('Phòng Khám', phongKhamNav)}
-                            {renderCollapsibleSection('Khám Bệnh', 'phongKham', ClipboardListIcon, phongKhamNav)}
+                            {renderSectionHeader('Khám Bệnh', khamBenhNav)}
+                            {renderCollapsibleSection('Phiên Khám', 'khamBenh', ClipboardListIcon, khamBenhNav)}
                         </div>
                     )}
 
-                    {/* 3. Tư Vấn Trực Tuyến */}
-                    {filterNav(tuVanNav).length > 0 && (
+                    {/* 3. Lịch Hẹn & Lịch Làm Việc */}
+                    {filterNav(lichHenNav).length > 0 && (
                         <div className="pt-4">
-                            {renderSectionHeader('Tư Vấn Trực Tuyến', tuVanNav)}
-                            {renderCollapsibleSection('Video & Chat', 'tuVan', VideoCallIcon, tuVanNav)}
-                        </div>
-                    )}
-
-                    {/* 4. Đặt Khám Thông Minh */}
-                    {filterNav(datKhamNav).length > 0 && (
-                        <div className="pt-4">
-                            {renderSectionHeader('Đặt Khám', datKhamNav)}
-                            {renderCollapsibleSection('Lịch Hẹn', 'datKham', CalendarIcon, datKhamNav)}
+                            {renderSectionHeader('Lịch Hẹn', lichHenNav)}
+                            {renderCollapsibleSection('Quản Lý Lịch', 'lichHen', CalendarIcon, lichHenNav)}
                         </div>
                     )}
 
@@ -361,27 +343,19 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
                         </div>
                     )}
 
-                    {/* 6. Cận Lâm Sàng */}
-                    {filterNav(canLamSangNav).length > 0 && (
+                    {/* 5. Công Cụ AI */}
+                    {filterNav(aiToolsNav).length > 0 && (
                         <div className="pt-4">
-                            {renderSectionHeader('Cận Lâm Sàng', canLamSangNav)}
-                            {renderCollapsibleSection('Chẩn Đoán', 'canLamSang', AIBrainIcon, canLamSangNav)}
+                            {renderSectionHeader('Công Cụ AI', aiToolsNav)}
+                            {renderCollapsibleSection('Chẩn Đoán AI', 'aiTools', AIBrainIcon, aiToolsNav)}
                         </div>
                     )}
 
-                    {/* 7. Thuốc & Điều Trị */}
-                    {filterNav(thuocNav).length > 0 && (
+                    {/* 6. Khác */}
+                    {filterNav(khacNav).length > 0 && (
                         <div className="pt-4">
-                            {renderSectionHeader('Thuốc & Điều Trị', thuocNav)}
-                            {renderCollapsibleSection('Tủ Thuốc', 'thuoc', PillIcon, thuocNav)}
-                        </div>
-                    )}
-
-                    {/* 8. Báo Cáo */}
-                    {filterNav(baoCaoNav).length > 0 && (
-                        <div className="pt-4">
-                            {renderSectionHeader('Báo Cáo', baoCaoNav)}
-                            {renderCollapsibleSection('Báo cáo Sự cố', 'baoCao', ReportIcon, baoCaoNav)}
+                            {renderSectionHeader('Khác', khacNav)}
+                            {renderCollapsibleSection('Tiện Ích', 'khac', ReportIcon, khacNav)}
                         </div>
                     )}
 

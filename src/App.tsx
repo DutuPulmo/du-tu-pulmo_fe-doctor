@@ -15,9 +15,8 @@ const TimeSlotsPage = lazy(() => import('@/pages/schedule/TimeSlotsPage').then(m
 const QueueManagerPage = lazy(() => import('@/pages/doctor/QueueManagerPage'));
 const InClinicExamPage = lazy(() => import('@/pages/doctor/encounters/InClinicExamPage'));
 const VideoExamPage = lazy(() => import('@/pages/doctor/encounters/VideoExamPage'));
-const TodaySchedulePage = lazy(() => import('@/pages/reception/TodaySchedulePage'));
+const AppointmentManagementPage = lazy(() => import('@/pages/appointment/AppointmentManagementPage'));
 const ChatPage = lazy(() => import('@/pages/consultation/ChatPage'));
-const AppointmentListPage = lazy(() => import('@/pages/appointment/AppointmentListPage'));
 const MedicalRecordPage = lazy(() => import('@/pages/records/MedicalRecordPage'));
 const PatientListPage = lazy(() => import('@/pages/records/PatientListPage'));
 const PrescriptionPage = lazy(() => import('@/pages/records/PrescriptionPage'));
@@ -95,13 +94,13 @@ function App() {
                 <QueueManagerPage />
               </ProtectedRoute>
             } />
-            <Route path="today" element={<TodaySchedulePage />} />
+            <Route path="today" element={<AppointmentManagementPage key="today" />} />
 
             {/* Tư Vấn Trực Tuyến */}
             <Route path="chat" element={<ChatPage />} />
 
             {/* Đặt Khám */}
-            <Route path="appointments" element={<AppointmentListPage />} />
+            <Route path="appointments" element={<AppointmentManagementPage key="all" />} />
             <Route path="appointments/:id" element={<AppointmentDetailPage />} />
             <Route path="schedules" element={<SchedulePage />} />
             <Route path="time-slots" element={<TimeSlotsPage />} />

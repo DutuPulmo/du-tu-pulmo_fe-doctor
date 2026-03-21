@@ -15,14 +15,19 @@ import {
 import {
     Card,
     CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Search, FileText, User, Calendar, ExternalLink } from 'lucide-react';
+import { 
+    Search, 
+    FileText, 
+    User, 
+    Eye, 
+    Filter,
+    Plus,
+    Clock
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function MedicalRecordPage() {
     const navigate = useNavigate();
@@ -31,117 +36,148 @@ export default function MedicalRecordPage() {
 
     const filteredRecords = records?.filter((record) => {
         const searchLower = search.toLowerCase();
-        const patientName = record.patient?.user?.fullName || (record.patient as any)?.fullName || '';
+        // Be safe with diverse patient data structures from backend
+        const patientName = record.patient?.user?.fullName || 
+                           (record.patient as { fullName?: string })?.fullName || '';
+
         return (
-            patientName.toLowerCase().includes(searchLower) ||
+            (patientName && patientName.toLowerCase().includes(searchLower)) ||
             record.recordNumber?.toLowerCase().includes(searchLower) ||
-            record.primaryDiagnosis?.toLowerCase().includes(searchLower)
+            record.diagnosis?.toLowerCase().includes(searchLower)
         );
     }) || [];
 
 
 
     return (
-        <div className="flex flex-col h-full space-y-4">
+        <div className="space-y-4 animate-in fade-in duration-700">
             <PageHeader
                 title="Hồ sơ bệnh án"
-                subtitle="Các hồ sơ bệnh án gần đây do bạn khám."
+                subtitle="Quản lý và tra cứu danh sách các hồ sơ bệnh án đã thực hiện."
             />
 
-            <div className="p-4 space-y-4">
-                <div className="flex items-center space-x-2 bg-white p-2 rounded-md border w-full max-w-md">
-                    <Search className="w-4 h-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Tìm kiếm theo tên bệnh nhân, mã hồ sơ..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="border-0 focus-visible:ring-0"
-                    />
-                </div>
+            <Card className="border-none shadow-sm bg-gray-50/50 slide-in-from-top-2 animate-in duration-500">
+                <CardContent className="p-4 flex flex-wrap items-end gap-3">
+                    <div className="flex-1 min-w-[240px]">
+                        <div className="relative">
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
+                            <Input
+                                placeholder="Tìm tên bệnh nhân, mã hồ sơ, chẩn đoán..."
+                                className="pl-9 bg-white h-9 text-sm"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                            />
+                        </div>
+                    </div>
 
-                <Card>
-                    <CardHeader className="p-4 pb-2">
-                        <CardTitle className="text-base">Danh sách hồ sơ gần đây</CardTitle>
-                        <CardDescription>Hiển thị 50 hồ sơ gần nhất.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Mã hồ sơ</TableHead>
-                                    <TableHead>Ngày khám</TableHead>
-                                    <TableHead>Bệnh nhân</TableHead>
-                                    <TableHead>Chẩn đoán chính</TableHead>
-                                    <TableHead>Trạng thái</TableHead>
-                                    <TableHead className="w-[50px]"></TableHead>
+                    <Button 
+                        variant="outline" 
+                        className="gap-2 h-9 px-3 text-sm bg-white"
+                        onClick={() => setSearch("")}
+                    >
+                        <Filter className="h-3.5 w-3.5" />
+                        Làm mới
+                    </Button>
+
+                    <Button className="gap-2 h-9 px-4 text-sm bg-blue-600 hover:bg-blue-700">
+                        <Plus className="h-4 w-4" />
+                        Tạo hồ sơ mới
+                    </Button>
+                </CardContent>
+            </Card>
+
+            <div className="rounded-md border bg-white shadow-sm overflow-hidden slide-in-from-bottom-4 animate-in duration-700 delay-150">
+                <Table>
+                    <TableHeader className="bg-gray-50/50">
+                        <TableRow>
+                            <TableHead className="w-[150px] text-[11px] uppercase font-semibold text-gray-500">Mã hồ sơ</TableHead>
+                            <TableHead className="w-[180px] text-[11px] uppercase font-semibold text-gray-500 text-center">Ngày thực hiện</TableHead>
+                            <TableHead className="text-[11px] uppercase font-semibold text-gray-500">Bệnh nhân</TableHead>
+                            <TableHead className="text-[11px] uppercase font-semibold text-gray-500">Chẩn đoán chính</TableHead>
+                            <TableHead className="w-[140px] text-[11px] uppercase font-semibold text-gray-500">Trạng thái</TableHead>
+                            <TableHead className="w-[50px]"></TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {isLoading ? (
+                            Array.from({ length: 5 }).map((_, i) => (
+                                <TableRow key={i}>
+                                    <TableCell colSpan={6} className="py-4">
+                                        <div className="flex items-center space-x-3">
+                                            <Skeleton className="h-4 w-[100px]" />
+                                            <Skeleton className="h-4 w-[150px]" />
+                                            <Skeleton className="h-4 w-[200px]" />
+                                        </div>
+                                    </TableCell>
                                 </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {isLoading ? (
-                                    Array.from({ length: 5 }).map((_, i) => (
-                                        <TableRow key={i}>
-                                            <TableCell colSpan={6} className="h-12 animate-pulse bg-slate-50" />
-                                        </TableRow>
-                                    ))
-                                ) : filteredRecords.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                                            Không tìm thấy hồ sơ nào.
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    filteredRecords.map((record) => (
-                                        <TableRow
-                                            key={record.id}
-                                            className="cursor-pointer hover:bg-slate-50"
-                                            onClick={() => navigate(`/doctor/medical-records/${record.id}`)}
-                                        >
-                                            <TableCell className="font-medium">
-                                                <div className="flex items-center space-x-2">
-                                                    <FileText className="w-4 h-4 text-blue-500" />
-                                                    <span>{record.recordNumber}</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="flex items-center space-x-2 text-muted-foreground">
-                                                    <Calendar className="w-3.5 h-3.5" />
-                                                    <span>
-                                                        {format(new Date(record.createdAt), 'dd/MM/yyyy HH:mm', {
-                                                            locale: vi,
-                                                        })}
-                                                    </span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="flex items-center space-x-2">
-                                                    <User className="w-4 h-4 text-slate-400" />
-                                                    <span className="font-medium text-slate-700">
-                                                        {record.patient?.user?.fullName || (record.patient as any)?.fullName || 'N/A'}
-                                                    </span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <span className="line-clamp-1" title={record.primaryDiagnosis || record.initialDiagnosis || ''}>
-                                                    {record.primaryDiagnosis || record.initialDiagnosis || 'Chưa chẩn đoán'}
-                                                </span>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge variant={record.status === 'COMPLETED' ? 'default' : 'secondary'}>
-                                                    {record.status === 'COMPLETED' ? 'Hoàn thành' : 'Đang xử lý'}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Button variant="ghost" size="icon">
-                                                    <ExternalLink className="w-4 h-4 text-slate-400" />
-                                                </Button>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
-                    </CardContent>
-                </Card>
+                            ))
+                        ) : filteredRecords.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={6} className="h-64 text-center">
+                                    <div className="flex flex-col items-center justify-center space-y-3">
+                                        <div className="w-32 h-32 bg-gray-50 rounded-full flex items-center justify-center">
+                                            <FileText className="h-12 w-12 text-gray-200" />
+                                        </div>
+                                        <p className="text-gray-400 font-medium text-sm">
+                                            Không tìm thấy hồ sơ bệnh án nào
+                                        </p>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            filteredRecords.map((record) => (
+                                <TableRow
+                                    key={record.id}
+                                    className="hover:bg-blue-50/30 transition-colors cursor-pointer text-sm"
+                                    onClick={() => navigate(`/doctor/medical-records/${record.id}`)}
+                                >
+                                    <TableCell className="py-3 font-mono text-xs text-blue-600">
+                                        {record.recordNumber}
+                                    </TableCell>
+                                    <TableCell className="py-3 text-center text-gray-600 whitespace-nowrap">
+                                        <div className="flex items-center justify-center gap-1.5">
+                                            <Clock className="h-3.5 w-3.5 text-gray-400" />
+                                            {format(new Date(record.createdAt), 'dd/MM/yyyy HH:mm', { locale: vi })}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="py-3">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-7 h-7 rounded-full bg-blue-50 flex items-center justify-center">
+                                                <User className="h-3.5 w-3.5 text-blue-500" />
+                                            </div>
+                                            <span className="font-medium text-gray-900 hover:text-blue-600 hover:underline">
+                                                {record.patient?.user?.fullName || (record.patient as { fullName?: string })?.fullName || '—'}
+                                            </span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="py-3">
+                                        <span className="line-clamp-1 text-gray-600 italic" title={record.primaryDiagnosis || record.initialDiagnosis || ''}>
+                                            {record.primaryDiagnosis || record.initialDiagnosis || 'Chưa chẩn đoán'}
+                                        </span>
+                                    </TableCell>
+                                    <TableCell className="py-3">
+                                        {record.status === 'COMPLETED' ? (
+                                            <span className="inline-flex items-center gap-1.5 px-2 py-1 text-green-700 bg-green-50 rounded-md font-medium text-[11px]">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                                                Hoàn thành
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex items-center gap-1.5 px-2 py-1 text-blue-600 bg-blue-50 rounded-md font-medium text-[11px]">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                                                Đang xử lý
+                                            </span>
+                                        )}
+                                    </TableCell>
+                                    <TableCell className="py-3 text-right">
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400">
+                                            <Eye className="h-4 w-4" />
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
+                    </TableBody>
+                </Table>
             </div>
         </div>
     );
