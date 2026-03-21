@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -56,6 +56,7 @@ const formatDate = (value: string) =>
   });
 
 export const TodaySchedulePage = () => {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<string>("all");
   const [payment, setPayment] = useState<string>("all");
@@ -370,6 +371,7 @@ export const TodaySchedulePage = () => {
                   <TableRow
                     key={appt.id}
                     className="hover:bg-blue-50/30 transition-colors cursor-pointer text-sm"
+                    onClick={() => navigate(`/doctor/appointments/${appt.id}`)}
                   >
                     <TableCell className="py-2">
                       {getStatusBadge(appt.status)}
@@ -378,12 +380,9 @@ export const TodaySchedulePage = () => {
                       {appt.appointmentNumber}
                     </TableCell>
                     <TableCell className="py-2 font-medium whitespace-nowrap">
-                      <Link
-                        to={`/doctor/appointments/${appt.id}`}
-                        className="hover:underline text-blue-600"
-                      >
+                      <span className="hover:underline text-blue-600">
                         {appt.patient?.user?.fullName}
-                      </Link>
+                      </span>
                     </TableCell>
                     <TableCell className="py-2 whitespace-nowrap">
                       {appt.patient?.user?.dateOfBirth
