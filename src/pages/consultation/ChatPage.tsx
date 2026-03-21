@@ -197,7 +197,7 @@ export const ChatPage = () => {
             </div>
             {debouncedKeyword.length >= 2 && (
               <div className="rounded-md border border-dashed p-2">
-                <p className="mb-2 text-xs font-medium text-gray-500">Ket qua tim benh nhan</p>
+                <p className="mb-2 text-xs font-medium text-gray-500">Kết quả tìm bệnh nhân</p>
                 <div className="space-y-1">
                   {patientSearchQuery.isLoading &&
                     Array.from({ length: 2 }).map((_, index) => (

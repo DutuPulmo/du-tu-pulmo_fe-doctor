@@ -11,7 +11,7 @@ const BASE_URL = '/patients';
 
 export const patientService = {
     getAll: async (query?: PatientQuery): Promise<PaginatedPatient> => {
-        const response = await api.get<PaginatedPatient>(BASE_URL, { params: query });
+        const response = await api.get<PaginatedPatient>(`${BASE_URL}/doctor/my-patients`, { params: query });
         return response.data;
     },
 

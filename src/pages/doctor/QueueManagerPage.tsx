@@ -20,7 +20,6 @@ import {
     CheckCircle2,
     Search,
     RefreshCw,
-    WifiOff,
 } from 'lucide-react';
 
 export default function QueueManagerPage() {
@@ -123,10 +122,6 @@ export default function QueueManagerPage() {
                 subtitle={
                     <div className="flex items-center gap-2">
                         <span className="text-gray-500">Phòng khám</span>
-                        <Badge variant="secondary" className="text-xs">
-                            <WifiOff className="h-3 w-3 mr-1" />
-                            Polling (30s)
-                        </Badge>
                     </div>
                 }
                 rightSlot={
@@ -134,7 +129,7 @@ export default function QueueManagerPage() {
                         <div className="relative w-64">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                             <Input
-                                placeholder="Tìm kiếm tên, mã hồ sơ, queue..."
+                                placeholder="Tìm kiếm tên, mã hồ sơ,..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="pl-9 h-9"
