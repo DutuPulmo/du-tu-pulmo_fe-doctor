@@ -1,4 +1,5 @@
 import api from '@/services/api';
+import { API_BASE_URL } from '@/lib/constants';
 import type {
   MedicalRecord,
   Prescription,
@@ -239,11 +240,10 @@ export const medicalService = {
   },
 
   /**
-   * Cập nhật API lấy URL PDF bệnh án
+   * Lấy URL PDF bệnh án
    */
-  getMedicalRecordPdfUrl: async (recordId: string): Promise<{ pdfUrl: string | null }> => {
-    const response = await api.get<{ pdfUrl: string | null }>(`/medical/records/${recordId}/pdf`);
-    return response.data;
+  getMedicalRecordPdfUrl: (recordId: string): string => {
+    return `${API_BASE_URL}/medical/records/${recordId}/pdf`;
   },
 
   /**
@@ -257,9 +257,8 @@ export const medicalService = {
   /**
    * Lấy URL PDF đơn thuốc
    */
-  getPrescriptionPdfUrl: async (prescriptionId: string): Promise<{ pdfUrl: string | null }> => {
-    const response = await api.get<{ pdfUrl: string | null }>(`/medical/prescriptions/${prescriptionId}/pdf`);
-    return response.data;
+  getPrescriptionPdfUrl: (prescriptionId: string): string => {
+    return `${API_BASE_URL}/medical/prescriptions/${prescriptionId}/pdf`;
   },
 
   /**

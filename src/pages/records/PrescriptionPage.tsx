@@ -1,9 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PageHeader } from '@/components/layout/PageHeader';
-import { useMyPrescriptions } from '@/hooks/use-medical';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useQuery } from '@tanstack/react-query';
 import {
     Table,
     TableBody,
@@ -13,191 +10,209 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import {
+    Button,
+} from '@/components/ui/button';
+import {
+    Input,
+} from '@/components/ui/input';
+import {
     Card,
     CardContent,
 } from '@/components/ui/card';
 import { 
     Search, 
-    Pill, 
     User, 
     Eye, 
     Printer,
     Filter,
     Plus,
-    Clock
+    Clock,
+    Loader2
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { Skeleton } from '@/components/ui/skeleton';
+import { medicalService } from '@/services/medical.service';
+import { PrescriptionStatusEnum } from '@/types/medical';
+import { printPdfFromUrl } from '@/lib/print-utils';
 
 export default function PrescriptionPage() {
     const navigate = useNavigate();
-    const [search, setSearch] = useState('');
-    const { data: prescriptions, isLoading } = useMyPrescriptions();
+    const [searchTerm, setSearchTerm] = useState('');
+    const [printingId, setPrintingId] = useState<string | null>(null);
 
-    const filteredPrescriptions = prescriptions?.filter((prescription) => {
-        const searchLower = search.toLowerCase();
-        const patientName = (prescription.patient as { user?: { fullName: string } })?.user?.fullName || 
-                           (prescription.patient as { fullName?: string })?.fullName || '';
+    const { data: prescriptions, isLoading } = useQuery({
+        queryKey: ['my-prescriptions'],
+        queryFn: () => medicalService.getMyPrescriptions(),
+    });
 
-        return (
-            (patientName && patientName.toLowerCase().includes(searchLower)) ||
-            prescription.prescriptionNumber?.toLowerCase().includes(searchLower) ||
-            prescription.diagnosis?.toLowerCase().includes(searchLower)
-        );
-    }) || [];
+    const handlePrint = async (prescriptionId: string, existingPdfUrl?: string) => {
+        try {
+            setPrintingId(prescriptionId);
+            let url = existingPdfUrl;
+            
+            if (!url) {
+                const res = await medicalService.generatePrescriptionPdf(prescriptionId);
+                url = res.pdfUrl;
+            }
+            
+            if (url) {
+                await printPdfFromUrl(url);
+            } else {
+                toast.error('Không tìm thấy đường dẫn file PDF');
+            }
+        } catch (error) {
+            console.error('Print error:', error);
+            toast.error('Lỗi khi chuẩn bị bản in');
+        } finally {
+            setPrintingId(null);
+        }
+    };
 
-
+    const filteredPrescriptions = prescriptions?.filter(p => 
+        p.prescriptionNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (p.patient?.user?.fullName || '').toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
-        <div className="space-y-4 animate-in fade-in duration-700">
-            <PageHeader
-                title="Đơn thuốc"
-                subtitle="Quản lý và tra cứu danh sách các đơn thuốc đã kê cho bệnh nhân."
-            />
+        <div className="p-6 space-y-6">
+            <div className="flex justify-between items-center">
+                <div>
+                    <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Danh sách Đơn thuốc</h1>
+                    <p className="text-slate-500 mt-1">Quản lý các đơn thuốc đã kê cho bệnh nhân</p>
+                </div>
+                <Button 
+                    className="bg-blue-600 hover:bg-blue-700 shadow-sm"
+                    onClick={() => navigate('/records/prescriptions/new')}
+                >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Kê đơn mới
+                </Button>
+            </div>
 
-            <Card className="border-none shadow-sm bg-gray-50/50 slide-in-from-top-2 animate-in duration-500">
-                <CardContent className="p-4 flex flex-wrap items-end gap-3">
-                    <div className="flex-1 min-w-[240px]">
-                        <div className="relative">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
+            <Card className="border-slate-200/60 shadow-sm overflow-hidden">
+                <CardContent className="p-0">
+                    <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row gap-4 items-center justify-between">
+                        <div className="relative w-full sm:w-96">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                             <Input
-                                placeholder="Tìm tên bệnh nhân, mã đơn, chẩn đoán..."
-                                className="pl-9 bg-white h-9 text-sm"
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
+                                placeholder="Tìm kiếm theo mã đơn, tên bệnh nhân..."
+                                className="pl-9 bg-white border-slate-200 focus:ring-blue-500/20 focus:border-blue-500"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
+                        <Button variant="outline" size="sm" className="w-full sm:w-auto text-slate-600 border-slate-200">
+                            <Filter className="h-4 w-4 mr-2" />
+                            Bộ lọc
+                        </Button>
                     </div>
 
-                    <Button 
-                        variant="outline" 
-                        className="gap-2 h-9 px-3 text-sm bg-white"
-                        onClick={() => setSearch("")}
-                    >
-                        <Filter className="h-3.5 w-3.5" />
-                        Làm mới
-                    </Button>
-
-                    <Button className="gap-2 h-9 px-4 text-sm bg-blue-600 hover:bg-blue-700">
-                        <Plus className="h-4 w-4" />
-                        Tạo đơn thuốc
-                    </Button>
+                    <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader className="bg-slate-50/50">
+                                <TableRow className="hover:bg-transparent border-slate-100">
+                                    <TableHead className="w-[150px] font-semibold text-slate-700">Mã đơn thuốc</TableHead>
+                                    <TableHead className="font-semibold text-slate-700">Bệnh nhân</TableHead>
+                                    <TableHead className="font-semibold text-slate-700">Ngày kê</TableHead>
+                                    <TableHead className="font-semibold text-slate-700 text-center">Trạng thái</TableHead>
+                                    <TableHead className="font-semibold text-slate-700 text-right">Thao tác</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {isLoading ? (
+                                    Array(5)
+                                        .fill(0)
+                                        .map((_, i) => (
+                                            <TableRow key={i} className="border-slate-50">
+                                                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                                <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                                                <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                                                <TableCell className="text-center"><Skeleton className="h-6 w-20 mx-auto rounded-full" /></TableCell>
+                                                <TableCell className="text-right"><Skeleton className="h-8 w-20 ml-auto" /></TableCell>
+                                            </TableRow>
+                                        ))
+                                ) : filteredPrescriptions?.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={5} className="h-32 text-center text-slate-500 italic">
+                                            Không tìm thấy đơn thuốc nào
+                                        </TableCell>
+                                    </TableRow>
+                                ) : (
+                                    filteredPrescriptions?.map((prescription) => (
+                                        <TableRow 
+                                            key={prescription.id} 
+                                            className="hover:bg-blue-50/30 transition-colors border-slate-50 cursor-pointer group"
+                                            onClick={() => navigate(`/records/prescriptions/${prescription.id}`)}
+                                        >
+                                            <TableCell className="font-medium text-blue-600">
+                                                {prescription.prescriptionNumber}
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center">
+                                                        <User className="h-4 w-4 text-slate-500" />
+                                                    </div>
+                                                    <span className="font-medium text-slate-700">
+                                                        {prescription.patient?.user?.fullName || 'N/A'}
+                                                    </span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-slate-600">
+                                                <div className="flex items-center gap-1.5">
+                                                    <Clock className="h-3.5 w-3.5" />
+                                                    {format(new Date(prescription.createdAt), 'dd/MM/yyyy HH:mm', { locale: vi })}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                                    prescription.status === PrescriptionStatusEnum.ACTIVE
+                                                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
+                                                        : 'bg-slate-100 text-slate-600 border border-slate-200'
+                                                }`}>
+                                                    {prescription.status === PrescriptionStatusEnum.ACTIVE ? 'Đang hiệu lực' : 'Đã hủy'}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell className="text-right whitespace-nowrap">
+                                                <div className="flex justify-end gap-1">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            navigate(`/doctor/prescriptions/${prescription.id}`);
+                                                        }}
+                                                    >
+                                                        <Eye className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                                        disabled={printingId === prescription.id}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handlePrint(prescription.id, prescription.pdfUrl);
+                                                        }}
+                                                    >
+                                                        {printingId === prescription.id ? (
+                                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                                        ) : (
+                                                            <Printer className="h-4 w-4" />
+                                                        )}
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
                 </CardContent>
             </Card>
-
-            <div className="rounded-md border bg-white shadow-sm overflow-hidden slide-in-from-bottom-4 animate-in duration-700 delay-150">
-                <Table>
-                    <TableHeader className="bg-gray-50/50">
-                        <TableRow>
-                            <TableHead className="w-[150px] text-[11px] uppercase font-semibold text-gray-500">Mã đơn thuốc</TableHead>
-                            <TableHead className="w-[180px] text-[11px] uppercase font-semibold text-gray-500 text-center">Ngày kê đơn</TableHead>
-                            <TableHead className="text-[11px] uppercase font-semibold text-gray-500">Bệnh nhân</TableHead>
-                            <TableHead className="text-[11px] uppercase font-semibold text-gray-500">Chẩn đoán</TableHead>
-                            <TableHead className="w-[140px] text-[11px] uppercase font-semibold text-gray-500">Trạng thái</TableHead>
-                            <TableHead className="w-[100px]"></TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {isLoading ? (
-                            Array.from({ length: 5 }).map((_, i) => (
-                                <TableRow key={i}>
-                                    <TableCell colSpan={6} className="py-4">
-                                        <div className="flex items-center space-x-3">
-                                            <Skeleton className="h-4 w-[120px]" />
-                                            <Skeleton className="h-4 w-[150px]" />
-                                            <Skeleton className="h-4 w-[200px]" />
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        ) : filteredPrescriptions.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={6} className="h-64 text-center">
-                                    <div className="flex flex-col items-center justify-center space-y-3">
-                                        <div className="w-32 h-32 bg-gray-50 rounded-full flex items-center justify-center">
-                                            <Pill className="h-12 w-12 text-gray-200" />
-                                        </div>
-                                        <p className="text-gray-400 font-medium text-sm">
-                                            Không tìm thấy đơn thuốc nào
-                                        </p>
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            filteredPrescriptions.map((prescription) => (
-                                <TableRow
-                                    key={prescription.id}
-                                    className="hover:bg-blue-50/30 transition-colors cursor-pointer text-sm"
-                                    onClick={() => navigate(`/doctor/prescriptions/${prescription.id}`)}
-                                >
-                                    <TableCell className="py-3 font-mono text-xs text-blue-600">
-                                        {prescription.prescriptionNumber}
-                                    </TableCell>
-                                    <TableCell className="py-3 text-center text-gray-600 whitespace-nowrap">
-                                        <div className="flex items-center justify-center gap-1.5">
-                                            <Clock className="h-3.5 w-3.5 text-gray-400" />
-                                            {format(new Date(prescription.createdAt), 'dd/MM/yyyy HH:mm', { locale: vi })}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="py-3">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-7 h-7 rounded-full bg-emerald-50 flex items-center justify-center">
-                                                <User className="h-3.5 w-3.5 text-emerald-500" />
-                                            </div>
-                                            <span className="font-medium text-gray-900 hover:text-blue-600 hover:underline">
-                                                {(prescription.patient as { user?: { fullName: string } })?.user?.fullName || 
-                                                 (prescription.patient as { fullName?: string })?.fullName || '—'}
-                                            </span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="py-3">
-                                        <span className="line-clamp-1 text-gray-600 italic" title={prescription.diagnosis || ''}>
-                                            {prescription.diagnosis || 'Chưa ghi nhận chẩn đoán'}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell className="py-3">
-                                        {prescription.status === 'FILLED' ? (
-                                            <span className="inline-flex items-center gap-1.5 px-2 py-1 text-green-700 bg-green-50 rounded-md font-medium text-[11px]">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                                                Đã cấp thuốc
-                                            </span>
-                                        ) : prescription.status === 'CANCELLED' ? (
-                                            <span className="inline-flex items-center gap-1.5 px-2 py-1 text-red-600 bg-red-50 rounded-md font-medium text-[11px]">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
-                                                Đã hủy
-                                            </span>
-                                        ) : (
-                                            <span className="inline-flex items-center gap-1.5 px-2 py-1 text-blue-600 bg-blue-50 rounded-md font-medium text-[11px]">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-                                                Hoạt động
-                                            </span>
-                                        )}
-                                    </TableCell>
-                                    <TableCell className="py-3">
-                                        <div className="flex justify-end gap-1">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    window.open(`/api/medical/prescriptions/${prescription.id}/pdf`, '_blank');
-                                                }}
-                                            >
-                                                <Printer className="h-4 w-4" />
-                                            </Button>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400">
-                                                <Eye className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
         </div>
     );
 }

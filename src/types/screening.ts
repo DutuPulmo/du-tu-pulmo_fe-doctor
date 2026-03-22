@@ -1,18 +1,20 @@
-export type ScreeningType = 'XRAY' | 'CT' | 'MRI' | 'ULTRASOUND' | 'OTHER';
+import type { PatientResponse } from "./patient";
+
+export type ScreeningType = "XRAY" | "CT" | "MRI" | "ULTRASOUND" | "OTHER";
 export type ScreeningStatus =
-  | 'UPLOADED'
-  | 'PENDING_AI'
-  | 'AI_PROCESSING'
-  | 'AI_COMPLETED'
-  | 'AI_FAILED'
-  | 'PENDING_DOCTOR'
-  | 'DOCTOR_REVIEWING'
-  | 'DOCTOR_COMPLETED'
-  | 'CANCELLED';
-export type ScreeningPriority = 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
-export type AiDiagnosisStatus = 'DETECTED' | 'UNCERTAIN' | 'ERROR' | 'PENDING';
-export type AiRiskLevel = 'Critical' | 'High' | 'Warning' | 'Normal' | 'Benign';
-export type DecisionSource = 'AI_ONLY' | 'DOCTOR_ONLY' | 'DOCTOR_REVIEWED_AI';
+  | "UPLOADED"
+  | "PENDING_AI"
+  | "AI_PROCESSING"
+  | "AI_COMPLETED"
+  | "AI_FAILED"
+  | "PENDING_DOCTOR"
+  | "DOCTOR_REVIEWING"
+  | "DOCTOR_COMPLETED"
+  | "CANCELLED";
+export type ScreeningPriority = "LOW" | "NORMAL" | "HIGH" | "URGENT";
+export type AiDiagnosisStatus = "DETECTED" | "UNCERTAIN" | "ERROR" | "PENDING";
+export type AiRiskLevel = "Critical" | "High" | "Warning" | "Normal" | "Benign";
+export type DecisionSource = "AI_ONLY" | "DOCTOR_ONLY" | "DOCTOR_REVIEWED_AI";
 
 export interface AiBoundingBox {
   x1: number;
@@ -92,6 +94,7 @@ export interface ScreeningConclusionResponse {
   agreesWithAi?: boolean;
   decisionSource?: DecisionSource;
   doctorOverrideReason?: string;
+  doctorNotes?: string;
   reviewedAt: string;
   createdAt: string;
   updatedAt: string;
@@ -114,6 +117,7 @@ export interface ScreeningRequestResponse {
   images?: MedicalImageResponse[];
   aiAnalyses?: AiAnalysisResponse[];
   conclusions?: ScreeningConclusionResponse[];
+  patient?: PatientResponse;
 }
 
 export interface UploadAnalyzeResponse {
@@ -126,7 +130,7 @@ export interface GetScreeningsQuery {
   page?: number;
   limit?: number;
   sort?: string;
-  order?: 'ASC' | 'DESC';
+  order?: "ASC" | "DESC";
   status?: ScreeningStatus;
   screeningType?: ScreeningType;
   patientId?: string;
@@ -148,4 +152,5 @@ export interface CreateConclusionDto {
   agreesWithAi?: boolean;
   decisionSource: DecisionSource;
   doctorOverrideReason?: string;
+  doctorNotes?: string;
 }

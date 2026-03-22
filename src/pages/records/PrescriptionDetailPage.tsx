@@ -7,6 +7,7 @@ import { ArrowLeft, Printer, FileText, Loader2 } from 'lucide-react';
 import { medicalService } from '@/services/medical.service';
 import { toast } from 'sonner';
 import { useState } from 'react';
+import { printPdfFromUrl } from '@/lib/print-utils';
 
 export const PrescriptionDetailPage = () => {
     const { id } = useParams<{ id: string }>();
@@ -15,18 +16,31 @@ export const PrescriptionDetailPage = () => {
 
     const [activeTab, setActiveTab] = useState<'details' | 'pdf'>('details');
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+    const [isPrinting, setIsPrinting] = useState(false);
 
     const handlePrintPrescription = async () => {
         if (!id) return;
+        setIsPrinting(true);
         try {
-            const { pdfUrl } = await medicalService.generatePrescriptionPdf(id);
-            if (pdfUrl) {
-                window.open(pdfUrl, '_blank');
+            let url = prescription?.pdfUrl;
+            
+            if (!url) {
+                const res = await medicalService.generatePrescriptionPdf(id);
+                url = res.pdfUrl;
+                // Invalidate query to update the UI with new pdfUrl if needed
+                queryClient.invalidateQueries({ queryKey: ['prescription', id] });
+            }
+            
+            if (url) {
+                await printPdfFromUrl(url);
             } else {
                 toast.error('Không tìm thấy link PDF');
             }
         } catch (error) {
+            console.error('Print error:', error);
             toast.error('Không thể tạo file in đơn thuốc');
+        } finally {
+            setIsPrinting(false);
         }
     };
 
@@ -84,8 +98,13 @@ export const PrescriptionDetailPage = () => {
                 }
                 subtitle={`Ngày kê: ${new Date(prescription.createdAt).toLocaleDateString('vi-VN')}`}
                 rightSlot={
-                    <Button variant="outline" onClick={handlePrintPrescription}>
-                        <Printer className="h-4 w-4 mr-2" /> In toa thuốc
+                    <Button variant="outline" onClick={handlePrintPrescription} disabled={isPrinting}>
+                        {isPrinting ? (
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                            <Printer className="h-4 w-4 mr-2" />
+                        )}
+                        In toa thuốc
                     </Button>
                 }
             />

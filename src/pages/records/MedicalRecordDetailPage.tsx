@@ -7,6 +7,7 @@ import { medicalService } from '@/services/medical.service';
 import { Button } from '@/components/ui/button';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import { toast } from 'sonner';
+import { printPdfFromUrl } from '@/lib/print-utils';
 import {
     MedicalRecordStatusEnum,
     type UpdateMedicalRecordDto,
@@ -34,6 +35,8 @@ export default function MedicalRecordDetailPage() {
     const [selectedPrescription, setSelectedPrescription] = useState<{ id?: string; pdfUrl?: string } | null>(null);
     const [selectedScreeningId, setSelectedScreeningId] = useState<string | null>(null);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+    const [isPrintingRecord, setIsPrintingRecord] = useState(false);
+    const [isDownloadingRecord, setIsDownloadingRecord] = useState(false);
     const [isDirty, setIsDirty] = useState(false);
     const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
     const [presentIllnessViewMode] = useState<'preview' | 'source'>('preview');
@@ -314,41 +317,42 @@ export default function MedicalRecordDetailPage() {
 
     const handlePrintRecord = async () => {
         if (!id) return;
+        setIsPrintingRecord(true);
         try {
-            const { pdfUrl } = await medicalService.generateMedicalRecordPdf(id);
-            if (!pdfUrl) return toast.error('Không tìm thấy link PDF');
-
-            const response = await fetch(pdfUrl);
-            const blob = await response.blob();
-            const blobUrl = URL.createObjectURL(blob);
-
-            const iframe = document.createElement('iframe');
-            iframe.style.display = 'none';
-            iframe.src = blobUrl;
-            document.body.appendChild(iframe);
-
-            iframe.onload = () => {
-                setTimeout(() => {
-                    iframe.contentWindow?.focus();
-                    iframe.contentWindow?.print();
-                    setTimeout(() => {
-                        document.body.removeChild(iframe);
-                        URL.revokeObjectURL(blobUrl);
-                    }, 1000);
-                }, 500);
-            };
-        } catch {
+            let url = record?.pdfUrl;
+            if (!url) {
+                const res = await medicalService.generateMedicalRecordPdf(id);
+                url = res.pdfUrl;
+                queryClient.invalidateQueries({ queryKey: ['medical-record', id] });
+            }
+            
+            if (url) {
+                await printPdfFromUrl(url);
+            } else {
+                toast.error('Không tìm thấy link PDF');
+            }
+        } catch (error) {
+            console.error('Print record error:', error);
             toast.error('Không thể tạo file in bệnh án');
+        } finally {
+            setIsPrintingRecord(false);
         }
     };
 
     const handleDownloadRecord = async () => {
         if (!id) return;
+        setIsDownloadingRecord(true);
         try {
-            const { pdfUrl } = await medicalService.generateMedicalRecordPdf(id);
-            if (!pdfUrl) return toast.error('Không tìm thấy link PDF');
+            let url = record?.pdfUrl;
+            if (!url) {
+                const res = await medicalService.generateMedicalRecordPdf(id);
+                url = res.pdfUrl;
+                queryClient.invalidateQueries({ queryKey: ['medical-record', id] });
+            }
 
-            const response = await fetch(pdfUrl);
+            if (!url) return toast.error('Không tìm thấy link PDF');
+
+            const response = await fetch(url);
             const blob = await response.blob();
             const blobUrl = URL.createObjectURL(blob);
 
@@ -360,8 +364,11 @@ export default function MedicalRecordDetailPage() {
             document.body.removeChild(a);
 
             setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-        } catch {
+        } catch (error) {
+            console.error('Download record error:', error);
             toast.error('Không thể tải bệnh án');
+        } finally {
+            setIsDownloadingRecord(false);
         }
     };
 
@@ -1085,16 +1092,18 @@ export default function MedicalRecordDetailPage() {
                         <div className="px-6 py-3 border-t border-gray-200 bg-white flex items-center justify-end gap-3 shrink-0">
                             <button
                                 onClick={handleDownloadRecord}
-                                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                                disabled={isDownloadingRecord}
+                                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors disabled:opacity-50"
                             >
-                                <Download className="w-4 h-4" />
+                                {isDownloadingRecord ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                                 Tải bệnh án
                             </button>
                             <button
                                 onClick={handlePrintRecord}
-                                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                                disabled={isPrintingRecord}
+                                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors disabled:opacity-50"
                             >
-                                <Printer className="w-4 h-4" />
+                                {isPrintingRecord ? <Loader2 className="w-4 h-4 animate-spin" /> : <Printer className="w-4 h-4" />}
                                 In bệnh án
                             </button>
                             <button

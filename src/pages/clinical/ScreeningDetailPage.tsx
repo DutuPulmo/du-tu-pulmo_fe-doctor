@@ -1,250 +1,327 @@
-import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
-  useCreateScreeningConclusion,
-  useScreeningAnalyses,
-  useScreeningConclusions,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   useScreeningDetail,
   useScreeningImages,
+  useScreeningAnalyses,
+  useScreeningConclusions,
+  useCreateScreeningConclusion,
 } from '@/hooks/use-screenings';
-import type { DecisionSource } from '@/types/screening';
-import { toast } from 'sonner';
 import AiAnalysisResult from '@/components/screening/AiAnalysisResult';
-
-const decisionSources: DecisionSource[] = [
-  'AI_ONLY',
-  'DOCTOR_ONLY',
-  'DOCTOR_REVIEWED_AI',
-];
+import type { DecisionSource } from '@/types/screening';
+import { 
+  ChevronLeft, 
+  BrainCircuit, 
+  User, 
+  Stethoscope, 
+  ImageIcon,
+  Search,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  ArrowRight,
+  AlertCircle
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ScreeningDetailPage() {
-  const { id } = useParams();
-  const { data: detail } = useScreeningDetail(id);
+  const { id } = useParams<{ id: string }>();
+  const { data: screening, isLoading: loadingDetail } = useScreeningDetail(id);
   const { data: images } = useScreeningImages(id);
   const { data: analyses } = useScreeningAnalyses(id);
   const { data: conclusions } = useScreeningConclusions(id);
-  const createConclusion = useCreateScreeningConclusion(id || '');
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [agreesWithAi, setAgreesWithAi] = useState(true);
-  const [decisionSource, setDecisionSource] =
-    useState<DecisionSource>('DOCTOR_REVIEWED_AI');
+  const createConclusion = useCreateScreeningConclusion(id!);
+
+  const [agreesWithAi, setAgreesWithAi] = useState<string>('true');
+  const [decisionSource, setDecisionSource] = useState<DecisionSource>('DOCTOR_REVIEWED_AI');
   const [doctorOverrideReason, setDoctorOverrideReason] = useState('');
+  const [doctorNotes, setDoctorNotes] = useState('');
 
-  // Sync latest override reason when conclusions load
-  useEffect(() => {
-    if (conclusions && conclusions.length > 0) {
-      const latest = conclusions[conclusions.length - 1];
-      setDoctorOverrideReason(latest.doctorOverrideReason || '');
-      setAgreesWithAi(latest.agreesWithAi ?? true);
-      setDecisionSource(latest.decisionSource ?? 'DOCTOR_REVIEWED_AI');
-    }
-  }, [conclusions]);
-
-  const onSubmitConclusion = async () => {
-    if (!id) return;
-
-    // Domain validation
-    if (agreesWithAi && decisionSource === 'DOCTOR_ONLY') {
-      toast.error('Không thể chọn DOCTOR_ONLY khi đồng ý AI');
+  const handleCreateConclusion = async () => {
+    if (agreesWithAi === 'false' && !doctorOverrideReason.trim()) {
+      toast.error('Cần nhập lý do khi không đồng ý với kết quả AI');
       return;
     }
 
     try {
       await createConclusion.mutateAsync({
-        agreesWithAi,
+        agreesWithAi: decisionSource === 'DOCTOR_ONLY' ? undefined : agreesWithAi === 'true',
         decisionSource,
-        doctorOverrideReason: doctorOverrideReason || undefined,
+        doctorOverrideReason: agreesWithAi === 'false' ? doctorOverrideReason : undefined,
+        doctorNotes: doctorNotes || undefined,
       });
-
-      // Reset form & close edit
+      toast.success('Ghi nhận kết luận chẩn đoán thành công');
       setDoctorOverrideReason('');
-      setAgreesWithAi(true);
-      setDecisionSource('DOCTOR_REVIEWED_AI');
-      setIsEditing(false);
-
-      toast.success('Đã lưu kết luận');
+      setDoctorNotes('');
     } catch {
-      toast.error('Không thể lưu kết luận');
+      toast.error('Không thể ghi nhận kết luận');
     }
   };
 
+  if (loadingDetail) {
+    return (
+      <div className="space-y-6 animate-pulse p-6">
+        <Skeleton className="h-10 w-1/3" />
+        <div className="grid grid-cols-3 gap-6">
+          <Skeleton className="h-64 col-span-2" />
+          <Skeleton className="h-64" />
+        </div>
+      </div>
+    );
+  }
+
+  const latestAnalysis = analyses?.[0];
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 pb-20 animate-in fade-in duration-500">
+      <div className="flex items-center gap-2 -mb-4">
+        <Button asChild variant="ghost" size="sm" className="text-slate-500 hover:text-blue-600">
+          <Link to="/doctor/screenings" className="flex items-center gap-1">
+            <ChevronLeft className="h-4 w-4" /> Quay lại danh sách
+          </Link>
+        </Button>
+      </div>
+
       <PageHeader
-        title={`Chi tiết screening ${detail?.screeningNumber || ''}`}
-        subtitle={detail?.status || ''}
+        title={
+          <div className="flex items-center gap-3">
+            <span>Chi tiết Screening · {screening?.screeningNumber}</span>
+          </div>
+        }
+        subtitle={
+          <div className="flex items-center gap-2 mt-1">
+            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+              {screening?.screeningType}
+            </Badge>
+            <span className="text-slate-400">•</span>
+            <div className="flex items-center gap-1 text-slate-500">
+              <User className="h-3.5 w-3.5" />
+              <span>Bệnh nhân: <span className="font-bold text-slate-700">{screening?.patient?.user?.fullName}</span></span>
+            </div>
+          </div>
+        }
       />
 
-      {/* ================= ẢNH ================= */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Ảnh</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {(images || []).map((img) => (
-            <div key={img.id} className="border rounded p-2">
-              <img
-                src={img.fileUrl}
-                alt={img.fileName}
-                className="w-full h-56 object-contain bg-black/90"
-              />
-              <p className="text-xs text-gray-500 mt-2">{img.fileName}</p>
-            </div>
-          ))}
-          {(images || []).length === 0 && (
-            <p className="text-sm text-gray-500">Chưa có ảnh.</p>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* ================= AI ANALYSIS ================= */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Kết quả AI</CardTitle>
-        </CardHeader>
-
-        <CardContent className="space-y-6">
-          {(analyses || []).map((a) => (
-            <AiAnalysisResult key={a.id} analysis={a} />
-          ))}
-
-          {(analyses || []).length === 0 && (
-            <p className="text-sm text-gray-500">Chưa có phân tích AI.</p>
-          )}
-        </CardContent>
-      </Card>
-
-
-      {/* ================= DOCTOR CONCLUSIONS ================= */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Kết luận bác sĩ</CardTitle>
-
-          {!isEditing && (
-            <Button size="sm" variant="outline" onClick={() => setIsEditing(true)}>
-              {conclusions?.length === 0 ? 'Thêm kết luận' : 'Sửa kết luận'}
-            </Button>
-          )}
-        </CardHeader>
-
-        <CardContent className="space-y-4">
-          {/* ===== Timeline Conclusions ===== */}
-          <div className="space-y-2">
-            {(conclusions || [])
-              .slice()
-              .sort(
-                (a, b) =>
-                  new Date(a.createdAt).getTime() -
-                  new Date(b.createdAt).getTime()
-              )
-              .map((c, index, arr) => {
-                const isLatest = index === arr.length - 1;
-
-                return (
-                  <div
-                    key={c.id}
-                    className={`rounded border p-3 text-sm space-y-1 ${isLatest ? 'border-blue-500 bg-blue-50' : ''
-                      }`}
-                  >
-                    <div className="flex justify-between text-xs text-gray-500">
-                      <span>
-                        {c.decisionSource}
-                        {isLatest && (
-                          <span className="ml-2 text-[10px] px-1.5 py-0.5 bg-blue-500 text-white rounded">
-                            Latest
-                          </span>
-                        )}
-                      </span>
-                      <span>
-                        {new Date(c.createdAt).toLocaleString('vi-VN')}
-                      </span>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+          {/* Main Visual Content */}
+          <Card className="border-none shadow-md bg-slate-900 overflow-hidden">
+             <CardHeader className="bg-slate-800/50 border-b border-slate-700/50 py-3">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-slate-200">
+                        <ImageIcon className="h-4 w-4 text-blue-400" />
+                        <span className="text-sm font-bold uppercase tracking-widest">Phát hiện từ hình ảnh</span>
                     </div>
-
-                    <div className="font-medium">
-                      {c.agreesWithAi
-                        ? 'Đồng ý AI'
-                        : 'Không đồng ý AI'}
-                    </div>
-
-                    {c.doctorOverrideReason && (
-                      <div className="text-xs text-orange-600">
-                        Override: {c.doctorOverrideReason}
-                      </div>
+                    {latestAnalysis && (
+                        <Badge className="bg-blue-600/20 text-blue-400 border-blue-400/30">
+                            AI Confidence: {(latestAnalysis.primaryDiagnosis?.probability || 0) * 100}%
+                        </Badge>
                     )}
-                  </div>
-                );
-              })}
-
-            {(conclusions || []).length === 0 && (
-              <p className="text-sm text-gray-500">Chưa có kết luận.</p>
-            )}
-          </div>
-
-          {/* ===== EDIT FORM ===== */}
-          {isEditing && (
-            <div className="border-t pt-4 space-y-3">
-              <div className="space-y-2">
-                <Label>Decision source</Label>
-                <select
-                  className="w-full border rounded-md px-3 py-2 text-sm"
-                  value={decisionSource}
-                  onChange={(e) =>
-                    setDecisionSource(e.target.value as DecisionSource)
-                  }
-                >
-                  {decisionSources.map((s) => (
-                    <option value={s} key={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Đồng ý với AI</Label>
-                <select
-                  className="w-full border rounded-md px-3 py-2 text-sm"
-                  value={agreesWithAi ? 'yes' : 'no'}
-                  onChange={(e) => setAgreesWithAi(e.target.value === 'yes')}
-                >
-                  <option value="yes">Có</option>
-                  <option value="no">Không</option>
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Lý do override (nếu có)</Label>
-                <Input
-                  disabled={agreesWithAi}
-                  placeholder="Nhập lý do khi KHÔNG đồng ý AI"
-                  value={doctorOverrideReason}
-                  onChange={(e) =>
-                    setDoctorOverrideReason(e.target.value)
-                  }
+                </div>
+             </CardHeader>
+            <CardContent className="p-0 bg-black min-h-[400px] flex items-center justify-center relative group">
+              {latestAnalysis?.evaluatedImageUrl ? (
+                <img
+                  src={latestAnalysis.evaluatedImageUrl}
+                  alt="evaluated"
+                  className="max-h-[600px] w-full object-contain transition-transform duration-500 group-hover:scale-[1.02]"
                 />
+              ) : images?.[0]?.fileUrl ? (
+                <img
+                  src={images[0].fileUrl}
+                  alt="original"
+                  className="max-h-[600px] w-full object-contain"
+                />
+              ) : (
+                <div className="flex flex-col items-center gap-2 text-slate-500 py-20">
+                    <ImageIcon className="h-12 w-12 opacity-20" />
+                    <p>Không có hình ảnh chẩn đoán</p>
+                </div>
+              )}
+              
+              <div className="absolute bottom-4 right-4 flex gap-2">
+                 <Button size="sm" variant="secondary" className="bg-slate-800/80 text-white border-slate-700 hover:bg-slate-700 backdrop-blur-sm">
+                    <Search className="h-4 w-4 mr-1.5" /> Phóng to
+                 </Button>
               </div>
+            </CardContent>
+          </Card>
 
-              <div className="flex gap-2">
+          {/* Detailed AI Report */}
+          <Card className="border-none shadow-sm bg-white">
+            <CardHeader className="border-b border-slate-50">
+              <div className="flex items-center gap-2">
+                <BrainCircuit className="h-5 w-5 text-blue-500" />
+                <CardTitle className="text-lg font-figtree">Báo cáo Phân tích AI</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-6">
+              {latestAnalysis ? (
+                <AiAnalysisResult analysis={latestAnalysis} />
+              ) : (
+                <div className="text-center py-10 space-y-3">
+                    <AlertCircle className="h-10 w-10 text-slate-200 mx-auto" />
+                    <p className="text-sm text-slate-400">Chưa có kết quả phân tích AI cho ca này.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-8">
+          {/* Doctor Conclusion Terminal */}
+          <Card className="border-none shadow-lg bg-white overflow-hidden sticky top-8">
+            <div className="h-1 bg-gradient-to-r from-blue-600 to-indigo-500" />
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-2">
+                <Stethoscope className="h-5 w-5 text-blue-600" />
+                <CardTitle className="text-lg font-figtree">Kết luận chẩn đoán</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                {decisionSource !== 'DOCTOR_ONLY' && (
+                  <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                    <Label className="text-xs font-bold text-slate-500 uppercase">Đồng ý kết quả AI?</Label>
+                    <Select 
+                      value={agreesWithAi} 
+                      onValueChange={setAgreesWithAi}
+                      disabled={decisionSource === 'AI_ONLY'}
+                    >
+                      <SelectTrigger className="w-full h-11 bg-slate-50 border-slate-200">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="true" className="text-emerald-600 font-medium">
+                          <div className="flex items-center gap-2">
+                              <CheckCircle2 className="h-4 w-4" /> Đồng ý
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="false" className="text-red-600 font-medium">
+                          <div className="flex items-center gap-2">
+                              <XCircle className="h-4 w-4" /> Bác sĩ bác bỏ/điều chỉnh
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold text-slate-500 uppercase">Nguồn quyết định</Label>
+                  <Select 
+                    value={decisionSource} 
+                    onValueChange={(val) => {
+                      setDecisionSource(val as DecisionSource);
+                      if (val === 'AI_ONLY') setAgreesWithAi('true');
+                    }}
+                  >
+                    <SelectTrigger className="w-full h-11 bg-slate-50 border-slate-200">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="DOCTOR_REVIEWED_AI">Bác sĩ xem xét kết quả AI</SelectItem>
+                      <SelectItem value="DOCTOR_ONLY">Bác sĩ chẩn đoán độc lập</SelectItem>
+                      <SelectItem value="AI_ONLY">Dùng hoàn toàn kết quả AI</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {agreesWithAi === 'false' && decisionSource !== 'DOCTOR_ONLY' && (
+                  <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                    <Label className="text-xs font-bold text-slate-500 uppercase">Lý do bác bỏ/điều chỉnh</Label>
+                    <Textarea
+                      placeholder="Nhập lý do chuyên môn..."
+                      value={doctorOverrideReason}
+                      onChange={(e) => setDoctorOverrideReason(e.target.value)}
+                      className="min-h-[100px] border-red-100 focus-visible:ring-red-200"
+                    />
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold text-slate-500 uppercase">Ghi chú của bác sĩ</Label>
+                  <Textarea
+                    placeholder="Nhập ghi chú thêm nếu cần..."
+                    value={doctorNotes}
+                    onChange={(e) => setDoctorNotes(e.target.value)}
+                    className="min-h-[80px] bg-slate-50 border-slate-200"
+                  />
+                </div>
+
                 <Button
-                  onClick={onSubmitConclusion}
+                  className="w-full h-12 bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-100 group transition-all"
+                  onClick={handleCreateConclusion}
                   disabled={createConclusion.isPending}
                 >
-                  Lưu kết luận
-                </Button>
-                <Button variant="ghost" onClick={() => setIsEditing(false)}>
-                  Hủy
+                  {createConclusion.isPending ? 'Đang lưu...' : 'Ghi nhận kết luận'}
+                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+
+              {/* Conclusion History */}
+              <div className="pt-6 border-t border-slate-100">
+                <div className="flex items-center gap-2 mb-4">
+                    <Clock className="h-4 w-4 text-slate-400" />
+                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Lịch sử kết luận</h4>
+                </div>
+                <div className="space-y-4 max-h-[300px] overflow-auto pr-2 custom-scrollbar">
+                  {conclusions?.map((c) => (
+                    <div key={c.id} className="relative pl-4 border-l-2 border-blue-100 py-1">
+                      <div className="absolute -left-[9px] top-1.5 h-4 w-4 rounded-full bg-white border-2 border-blue-500 flex items-center justify-center">
+                        <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex justify-between items-start">
+                          <p className="text-xs font-bold text-slate-900">
+                            BS. {c.doctorId}...
+                          </p>
+                          <span className="text-[10px] text-slate-400 font-mono">
+                            {new Date(c.createdAt).toLocaleDateString('vi-VN')}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-600 line-clamp-2">
+                           {c.decisionSource === 'DOCTOR_ONLY' 
+                            ? 'Chẩn đoán độc lập' 
+                            : c.agreesWithAi ? 'Đồng ý với AI' : 'Điều chỉnh kết quả AI'}
+                        </p>
+                        {c.doctorOverrideReason && (
+                          <p className="text-[10px] text-slate-400 italic bg-slate-50 p-1.5 rounded mt-1 border border-slate-100">
+                            <strong>Lý do:</strong> "{c.doctorOverrideReason}"
+                          </p>
+                        )}
+                        {c.doctorNotes && (
+                          <p className="text-[10px] text-slate-500 bg-blue-50/30 p-1.5 rounded mt-1 border border-blue-100/30">
+                            <strong>Ghi chú:</strong> {c.doctorNotes}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  {conclusions?.length === 0 && (
+                    <p className="text-xs text-slate-400 italic text-center py-4">Chưa có kết luận nào</p>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
