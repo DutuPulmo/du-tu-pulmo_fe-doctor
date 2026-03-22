@@ -181,6 +181,14 @@ export const AppointmentManagementPage = () => {
             Đã dời lịch
           </Badge>
         );
+      case "NO_SHOW":
+        return (
+          <Badge
+            className={`bg-slate-50 text-slate-700 border-slate-200 ${baseClass}`}
+          >
+            Vắng mặt
+          </Badge>
+        );
 
       default:
         return <Badge className={`${baseClass}`}>{status}</Badge>;
@@ -329,6 +337,7 @@ export const AppointmentManagementPage = () => {
                 <SelectItem value="IN_PROGRESS">Đang khám</SelectItem>
                 <SelectItem value="COMPLETED">Hoàn thành</SelectItem>
                 <SelectItem value="CANCELLED">Đã hủy</SelectItem>
+                <SelectItem value="NO_SHOW">Vắng mặt</SelectItem>
               </SelectContent>
             </Select>
           </div>

@@ -37,6 +37,7 @@ export const AppointmentStatus = {
   COMPLETED: 'COMPLETED',
   CANCELLED: 'CANCELLED',
   RESCHEDULED: 'RESCHEDULED',
+  NO_SHOW: 'NO_SHOW',
 } as const;
 export type AppointmentStatus = typeof AppointmentStatus[keyof typeof AppointmentStatus];
 
@@ -96,6 +97,7 @@ export const APPOINTMENT_STATUS_LABELS = {
   [AppointmentStatus.COMPLETED]: 'Hoàn thành',
   [AppointmentStatus.CANCELLED]: 'Đã hủy',
   [AppointmentStatus.RESCHEDULED]: 'Đã đổi lịch',
+  [AppointmentStatus.NO_SHOW]: 'Vắng mặt',
 };
 
 // Role-based Permissions
@@ -149,6 +151,7 @@ export const STATUS_TO_LANE: Record<AppointmentStatus, QueueLane | null> = {
   [AppointmentStatus.COMPLETED]: 'COMPLETED',
   [AppointmentStatus.CANCELLED]: null,
   [AppointmentStatus.RESCHEDULED]: null,
+  [AppointmentStatus.NO_SHOW]: null,
 };
 
 // Status that allows "BẮT ĐẦU KHÁM" for IN_CLINIC appointments

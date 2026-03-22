@@ -56,6 +56,8 @@ export const ReceptionPage = () => {
                 return <Badge className="bg-green-100 text-green-700 hover:bg-green-200">Hoàn thành</Badge>;
             case AppointmentStatus.CANCELLED:
                 return <Badge className="bg-red-100 text-red-700 hover:bg-red-200">Đã hủy</Badge>;
+            case AppointmentStatus.NO_SHOW:
+                return <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200">Vắng mặt</Badge>;
             default:
                 return <Badge variant="outline">{status}</Badge>;
         }
