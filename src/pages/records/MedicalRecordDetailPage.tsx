@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { FileText, Download, Printer, Save, Calendar, FileCheck, Loader2 } from 'lucide-react';
+import { FileText, Download, Printer, Save, Calendar, FileCheck, Loader2, History } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { medicalService } from '@/services/medical.service';
 import { Button } from '@/components/ui/button';
@@ -392,7 +392,7 @@ export default function MedicalRecordDetailPage() {
         { id: 'medical-record', label: 'Bệnh án' },
         { id: 'prescription', label: 'Phiếu điều trị' },
         { id: 'screening', label: 'Tầm soát' },
-        { id: 'nursing-care', label: 'Phiếu chăm sóc' },
+        // { id: 'nursing-care', label: 'Phiếu chăm sóc' },
         { id: 'discharge-summary', label: 'Tổng kết bệnh án' }
     ];
 
@@ -532,6 +532,45 @@ export default function MedicalRecordDetailPage() {
                                             </div>
                                         </div>
                                     </section>
+
+                                    {/* Liên kết hồ sơ */}
+                                    {record.previousRecord && (
+                                        <section className="bg-blue-50/50 p-4 rounded-lg border border-blue-100 mt-6">
+                                            <div className="flex items-center gap-2 mb-3">
+                                                <History className="w-4 h-4 text-blue-600" />
+                                                <h3 className="text-sm font-semibold text-blue-900">
+                                                    Liên kết hồ sơ (Tiền sử gần nhất)
+                                                </h3>
+                                            </div>
+                                            <div 
+                                                className="bg-white p-3 rounded-md border border-blue-200 cursor-pointer hover:border-blue-400 transition-colors shadow-sm"
+                                                onClick={() => navigate(`/doctor/medical-records/${record.previousRecord?.id}`)}
+                                            >
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">
+                                                        #{record.previousRecord.recordNumber}
+                                                    </span>
+                                                    <span className="text-xs text-gray-500 italic">
+                                                        {record.previousRecord.recordType}
+                                                    </span>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-2 text-xs">
+                                                    <div>
+                                                        <span className="text-gray-500">Ngày khám: </span>
+                                                        <span className="font-medium text-gray-900">
+                                                            {new Date(record.previousRecord.createdAt).toLocaleDateString('vi-VN')}
+                                                        </span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-gray-500">Bác sĩ: </span>
+                                                        <span className="font-medium text-gray-900">
+                                                            {record.previousRecord.doctorName || '---'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </section>
+                                    )}
 
                                     {/* Thông tin đến khám */}
                                     <section>
@@ -755,7 +794,7 @@ export default function MedicalRecordDetailPage() {
                                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                                                 />
                                             </div>
-                                            <div>
+                                            {/* <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                                     Khám theo hệ cơ quan / Các bộ phận
                                                 </label>
@@ -766,7 +805,7 @@ export default function MedicalRecordDetailPage() {
                                                     placeholder="Nhập kết quả khám theo hệ cơ quan..."
                                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                                                 />
-                                            </div>
+                                            </div> */}
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                                     Đánh giá của bác sĩ / Tóm tắt lâm sàng
@@ -882,12 +921,12 @@ export default function MedicalRecordDetailPage() {
                             )}
 
                             {/* TAB: PHIẾU CHĂM SÓC */}
-                            {activeTab === 'nursing-care' && (
+                            {/* {activeTab === 'nursing-care' && (
                                 <div className="text-center py-12 text-gray-500">
                                     <FileText className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                                     <p>Chức năng phiếu chăm sóc đang được phát triển</p>
                                 </div>
-                            )}
+                            )} */}
 
                             {/* TAB: VIEW SCREENING */}
                             {activeTab === 'screening' && (

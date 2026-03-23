@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { appointmentService } from '@/services/appointment.service';
 import { medicalService } from '@/services/medical.service';
 import { format } from 'date-fns';
-import type { CreateVitalSignDto, MedicalRecord, Prescription, UpdateMedicalRecordDtoForEncounter, VitalSign } from '@/types/medical';
+import type { CreateVitalSignDto, MedicalRecord, Prescription, UpdateMedicalRecordDtoForEncounter, VitalSign, LinkRecordInfo } from '@/types/medical';
 import { toast } from 'sonner';
 
 const AUTO_SAVE_DEBOUNCE = 5000;
@@ -105,6 +105,10 @@ export function useEncounterLegacy(appointmentId: string) {
             familyHistory: recordData.familyHistory,
             smokingStatus: normalizeBoolean((recordData as any).smokingStatus),
             alcoholConsumption: normalizeBoolean((recordData as any).alcoholConsumption),
+            previousRecordId: recordData.previousRecordId,
+            suggestedPreviousRecordId: recordData.suggestedPreviousRecordId,
+            previousRecord: recordData.previousRecord,
+            suggestedPreviousRecord: recordData.suggestedPreviousRecord,
         } as unknown as MedicalRecord;
         setMedicalRecord(normalized);
     } else {
@@ -186,6 +190,8 @@ export function useEncounterLegacy(appointmentId: string) {
       alcoholConsumption: normalizeBoolean(medicalRecord.alcoholConsumption),
       followUpInstructions: medicalRecord.followUpInstructions ?? null,
       progressNotes: medicalRecord.progressNotes ?? null,
+      previousRecordId: medicalRecord.previousRecordId || null,
+      previousRecord: medicalRecord.previousRecord || null,
       followUpRequired,
       nextAppointmentDate: nextAppointmentDate || null,
     };
@@ -221,11 +227,21 @@ export function useEncounterLegacy(appointmentId: string) {
       progressNotes: medicalRecord.progressNotes ?? undefined,
       followUpRequired,
       nextAppointmentDate: nextAppointmentDate || undefined,
+      previousRecordId: medicalRecord.previousRecordId || undefined,
     };
   }, [medicalRecord, followUpRequired, nextAppointmentDate]);
 
   const updateRecord = useCallback((field: keyof MedicalRecord, value: unknown) => {
     setMedicalRecord(prev => prev ? { ...prev, [field]: value } : null);
+    setIsDirty(true);
+  }, []);
+
+  const updateLinking = useCallback((record: LinkRecordInfo | null) => {
+    setMedicalRecord(prev => prev ? { 
+      ...prev, 
+      previousRecordId: record?.id || null,
+      previousRecord: record
+    } : null);
     setIsDirty(true);
   }, []);
 
@@ -388,6 +404,7 @@ export function useEncounterLegacy(appointmentId: string) {
     canEdit,
     
     updateRecord,
+    updateLinking,
     saveDraft,
     completeExamination,
     saveVitalSigns,

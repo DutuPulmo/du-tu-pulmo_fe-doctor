@@ -8,13 +8,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Save, ArrowRight, CheckCircle2, Loader2, AlertCircle, Lock, PanelLeft } from 'lucide-react';
+import { Save, ArrowRight, CheckCircle2, Loader2, AlertCircle, Lock, PanelLeft, Link, History, Link2Off } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { HeaderUserMenu } from '@/components/layout/HeaderUserMenu';
 import { getUser, logout } from '@/lib/auth';
 import { format } from 'date-fns';
 import type { Appointment } from '@/types/appointment';
-import { type CreatePrescriptionDto, type CreateVitalSignDto, type MedicalRecord, type Prescription, type VitalSign, } from '@/types/medical';
+import { type CreatePrescriptionDto, type CreateVitalSignDto, type MedicalRecord, type Prescription, type VitalSign, type LinkRecordInfo } from '@/types/medical';
 import AIXraySection from '../medical/AIXraySection';
 import { useDashboardLayout } from '@/components/layout/DashboardLayout';
 import { PrescriptionEditor, type PrescriptionEditorHandle } from '@/components/medical/PrescriptionEditor';
@@ -49,6 +49,7 @@ interface MedicalRecordWorkspaceProps {
     onSetFollowUpRequired: (value: boolean) => void;
     onSetNextAppointmentDate: (value: string) => void;
     onPrescriptionsChange?: (items: Prescription[]) => void;
+    onUpdateLinking: (record: LinkRecordInfo | null) => void;
 
     headerRightSlot?: React.ReactNode;
     topBannerSlot?: React.ReactNode;
@@ -120,6 +121,7 @@ export const MedicalRecordWorkspace = React.memo(function MedicalRecordWorkspace
     onComplete,
     onSetFollowUpRequired,
     onSetNextAppointmentDate,
+    onUpdateLinking,
     headerRightSlot,
     topBannerSlot,
     sidePanelSlot,
@@ -462,6 +464,80 @@ export const MedicalRecordWorkspace = React.memo(function MedicalRecordWorkspace
                                 </div>
 
                                 <div className="mt-4 grid gap-4">
+                                    {/* LIÊN KẾT HỒ SƠ */}
+                                    <div className={`p-4 rounded-xl border transition-all ${medicalRecord?.previousRecordId ? 'bg-blue-50/50 border-blue-200' : 'bg-slate-50 border-slate-200'}`}>
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className="flex items-center gap-2 text-slate-900 font-semibold">
+                                                <History className="h-4 w-4 text-blue-600" />
+                                                <span>Liên kết hồ sơ tiền sử</span>
+                                            </div>
+                                            {medicalRecord?.previousRecordId && canEdit && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                    onClick={() => onUpdateLinking(null)}
+                                                >
+                                                    <Link2Off className="h-3.5 w-3.5 mr-1" />
+                                                    Hủy liên kết
+                                                </Button>
+                                            )}
+                                        </div>
+
+                                        {medicalRecord?.previousRecord ? (
+                                            <div className="flex items-start gap-4 bg-white p-3 rounded-lg border border-blue-100 shadow-sm">
+                                                <div className="bg-blue-100 p-2 rounded-full">
+                                                    <Link className="h-4 w-4 text-blue-600" />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <span className="font-medium text-slate-900 truncate">
+                                                            {medicalRecord.previousRecord.recordNumber || 'Hồ sơ cũ'}
+                                                        </span>
+                                                        <Badge variant="outline" className="text-[10px] uppercase font-bold text-blue-600 border-blue-200 bg-blue-50">
+                                                            Đã liên kết
+                                                        </Badge>
+                                                    </div>
+                                                    <div className="text-xs text-slate-500 flex flex-wrap gap-x-4 gap-y-1">
+                                                        <span>Ngày: {medicalRecord.previousRecord.createdAt ? format(new Date(medicalRecord.previousRecord.createdAt), 'dd/MM/yyyy') : '--'}</span>
+                                                        <span>BS: {medicalRecord.previousRecord.doctorName || 'N/A'}</span>
+                                                        <span>Loại: {medicalRecord.previousRecord.recordType || 'N/A'}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : medicalRecord?.suggestedPreviousRecord ? (
+                                            <div className="flex items-start gap-4 bg-white/60 p-3 rounded-lg border border-dashed border-slate-300">
+                                                <div className="bg-slate-100 p-2 rounded-full">
+                                                    <History className="h-4 w-4 text-slate-400" />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <span className="font-medium text-slate-700 truncate">
+                                                            Gợi ý: {medicalRecord.suggestedPreviousRecord.recordNumber || 'Hồ sơ gần nhất'}
+                                                        </span>
+                                                    </div>
+                                                    <div className="text-xs text-slate-500 mb-2">
+                                                        Khám ngày {medicalRecord.suggestedPreviousRecord.createdAt ? format(new Date(medicalRecord.suggestedPreviousRecord.createdAt), 'dd/MM/yyyy') : '--'} bởi {medicalRecord.suggestedPreviousRecord.doctorName || 'N/A'}
+                                                    </div>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="h-8 border-blue-600 text-blue-600 hover:bg-blue-50"
+                                                        onClick={() => onUpdateLinking(medicalRecord.suggestedPreviousRecord!)}
+                                                        disabled={!canEdit}
+                                                    >
+                                                        <Link className="h-3.5 w-3.5 mr-1" />
+                                                        Dùng hồ sơ này
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="text-sm text-slate-500 italic py-2 px-1">
+                                                Chưa có liên kết và không có gợi ý phù hợp.
+                                            </div>
+                                        )}
+                                    </div>
+
                                     <Field label="Lý do khám" required>
                                         <Textarea
                                             value={medicalRecord?.chiefComplaint || ''}

@@ -80,6 +80,14 @@ export type DecisionSourceEnum = typeof DecisionSourceEnum[keyof typeof Decision
 // MEDICAL RECORD TYPES - Matched with BE entity + MedicalRecordDetailResponseDto
 // ============================================================================
 
+export interface LinkRecordInfo {
+  id: string;
+  recordNumber: string;
+  createdAt: string | Date;
+  doctorName?: string;
+  recordType?: string;
+}
+
 /**
  * Medical Record Response from BE
  * Maps to MedicalRecordResponseDto / MedicalRecordDetailResponseDto in BE
@@ -159,7 +167,10 @@ export interface MedicalRecord {
   } | null;
   
   // Related record (for linking)
-  relatedRecordId?: string | null;
+  previousRecordId?: string | null;
+  suggestedPreviousRecordId?: string | null;
+  previousRecord?: LinkRecordInfo | null;
+  suggestedPreviousRecord?: LinkRecordInfo | null;
   
   // Relations (loaded from BE)
   vitalSigns?: VitalSign[];
@@ -437,6 +448,12 @@ export interface MedicalRecordDetailResponse {
   createdAt: string;
   updatedAt: string;
   
+  // Linking
+  previousRecordId?: string;
+  suggestedPreviousRecordId?: string;
+  previousRecord?: LinkRecordInfo;
+  suggestedPreviousRecord?: LinkRecordInfo;
+  
   // PDF
   pdfUrl?: string;
 
@@ -472,6 +489,7 @@ export interface UpdateMedicalRecordDtoForEncounter {
   progressNotes?: string;
   followUpRequired?: boolean;
   nextAppointmentDate?: string;
+  previousRecordId?: string;
 }
 
 // ============================================================================

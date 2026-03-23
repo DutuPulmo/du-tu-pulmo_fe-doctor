@@ -33,7 +33,7 @@ export default function MedicalRecordPage() {
     const navigate = useNavigate();
     const [search, setSearch] = useState('');
     const { data: records, isLoading } = useMyRecords();
-
+    
     const filteredRecords = records?.filter((record) => {
         const searchLower = search.toLowerCase();
         // Be safe with diverse patient data structures from backend
@@ -151,8 +151,8 @@ export default function MedicalRecordPage() {
                                         </div>
                                     </TableCell>
                                     <TableCell className="py-3">
-                                        <span className="line-clamp-1 text-gray-600 italic" title={record.primaryDiagnosis || record.initialDiagnosis || ''}>
-                                            {record.primaryDiagnosis || record.initialDiagnosis || 'Chưa chẩn đoán'}
+                                        <span className="line-clamp-1 text-gray-600 italic" title={record.diagnosis || record.primaryDiagnosis || record.initialDiagnosis || ''}>
+                                            {record.diagnosis || record.primaryDiagnosis || record.initialDiagnosis || 'Chưa chẩn đoán'}
                                         </span>
                                     </TableCell>
                                     <TableCell className="py-3">

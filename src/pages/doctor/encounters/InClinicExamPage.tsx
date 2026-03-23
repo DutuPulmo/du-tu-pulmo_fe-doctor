@@ -114,6 +114,7 @@ export default function InClinicExamPage() {
                 onSetFollowUpRequired={encounter.setFollowUpRequired}
                 onSetNextAppointmentDate={encounter.setNextAppointmentDate}
                 onPrescriptionsChange={encounter.setPrescriptions}
+                onUpdateLinking={encounter.updateLinking}
                 headerRightSlot={
                     <Button variant="outline" onClick={() => navigate('/doctor/queue-manager')}>
                         Quay lại hàng chờ
