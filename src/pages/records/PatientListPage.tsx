@@ -47,7 +47,7 @@ function formatDate(dateStr?: string) {
 }
 
 function getGenderBadge(gender?: string) {
-    const baseClass = "text-[11px] px-2 h-6 whitespace-nowrap inline-flex items-center justify-center rounded-md font-medium transition-none";
+    const baseClass = "text-[11px] px-2 h-6 whitespace-nowrap inline-flex items-center justify-center rounded-md font-medium hover:bg-transparent transition-none";
     if (gender === 'MALE') {
         return (
             <Badge className={`bg-blue-50 text-blue-700 border-blue-200 ${baseClass}`}>

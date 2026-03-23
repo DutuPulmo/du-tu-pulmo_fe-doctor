@@ -44,7 +44,6 @@ export default function ScreeningDetailPage() {
   const { data: images } = useScreeningImages(id);
   const { data: analyses } = useScreeningAnalyses(id);
   const { data: conclusions } = useScreeningConclusions(id);
-
   const createConclusion = useCreateScreeningConclusion(id!);
 
   const [agreesWithAi, setAgreesWithAi] = useState<string>('true');
@@ -289,7 +288,7 @@ export default function ScreeningDetailPage() {
                       <div className="space-y-1">
                         <div className="flex justify-between items-start">
                           <p className="text-xs font-bold text-slate-900">
-                            BS. {c.doctorId}...
+                            {c?.doctor?.fullName}
                           </p>
                           <span className="text-[10px] text-slate-400 font-mono">
                             {new Date(c.createdAt).toLocaleDateString('vi-VN')}

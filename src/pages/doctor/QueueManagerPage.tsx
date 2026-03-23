@@ -9,7 +9,10 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
 import { QueueCard } from '@/components/queue/QueueCard';
-import { useGetMyQueue, useGetDoctorStats, useGetMyAppointmentsAsDoctor } from '@/hooks/use-appointments';
+import {
+    useGetMyQueue,
+    useGetMyAppointmentsAsDoctor,
+} from '@/hooks/use-appointments';
 import { useEncounterActions } from '@/hooks/use-encounter-actions';
 import type { Appointment } from '@/types/appointment';
 import { AppointmentStatus } from '@/types/appointment';
@@ -27,21 +30,53 @@ export default function QueueManagerPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const { startExamAsync } = useEncounterActions();
 
-    const { data: queueData, isLoading, isFetching, refetch } = useGetMyQueue();
-    const { data: stats } = useGetDoctorStats();
+    // ─── Data sources ────────────────────────────────────────────────────────
 
+    // Nguồn 1: Hàng đợi hôm nay (CONFIRMED, CHECKED_IN, IN_PROGRESS)
+    const {
+        data: todayQueue,
+        isLoading: isQueueLoading,
+        isFetching,
+        refetch,
+    } = useGetMyQueue();
+
+    // Nguồn 2: Các ca đã hoàn thành HÔM NAY (filter theo ngày)
     const today = new Date();
-    const startDate = format(today, 'yyyy-MM-dd');
-    const endDate = format(today, 'yyyy-MM-dd');
+    const todayStr = format(today, 'yyyy-MM-dd');
 
-    const { data: completedData } = useGetMyAppointmentsAsDoctor({
-        page: 1,
-        limit: 20,
-        status: AppointmentStatus.COMPLETED,
-        startDate,
-        endDate
-    });
-    const completedToday = completedData?.items || [];
+    const { data: completedTodayData, isLoading: isCompletedLoading } =
+        useGetMyAppointmentsAsDoctor({
+            page: 1,
+            limit: 50,
+            status: AppointmentStatus.COMPLETED,
+            startDate: todayStr,
+            endDate: todayStr,
+        });
+
+    // ─── Derived state — tất cả lấy từ đúng nguồn ───────────────────────────
+
+    // Kanban columns — từ todayQueue
+    const upcomingTodayItems: Appointment[] = todayQueue?.upcomingToday ?? [];   // CONFIRMED
+    const checkedInItems: Appointment[]     = todayQueue?.waitingQueue   ?? [];   // CHECKED_IN
+    const inProgressItems: Appointment[]    = todayQueue?.inProgress     ?? [];   // IN_PROGRESS
+
+    // Cột "Đang chờ" = CHECKED_IN + CONFIRMED
+    const waitingItems: Appointment[] = [...checkedInItems, ...upcomingTodayItems];
+
+    // Cột "Đã khám" — từ completedTodayData (filter hôm nay)
+    const completedTodayItems: Appointment[] = completedTodayData?.items ?? [];
+
+    // ─── Stats cards — tất cả scope HÔM NAY ─────────────────────────────────
+
+    // Tổng hôm nay = tất cả nhóm cộng lại
+    const totalTodayCount =
+        waitingItems.length + inProgressItems.length + completedTodayItems.length;
+
+    const waitingCount     = waitingItems.length;
+    const inProgressCount  = inProgressItems.length;
+    const completedCount   = completedTodayItems.length;
+
+    // ─── Helpers ─────────────────────────────────────────────────────────────
 
     const getEncounterRoute = (id: string, type?: string) =>
         type === 'VIDEO'
@@ -60,38 +95,37 @@ export default function QueueManagerPage() {
         }
     };
 
-    const handleComplete = (id: string, type?: string) => {
-        navigate(getEncounterRoute(id, type));
-    };
+    const handleComplete    = (id: string, type?: string) => navigate(getEncounterRoute(id, type));
+    const handleViewDetails = (id: string) => navigate(`/doctor/appointments/${id}`);
+    const handleOpenRecord  = (id: string, type?: string) => navigate(getEncounterRoute(id, type));
 
-    const handleViewDetails = (id: string) => {
-        navigate(`/doctor/appointments/${id}`);
-    };
+    const getPatientName = (a: Appointment) => a.patient?.user?.fullName ?? '';
 
-    const handleOpenRecord = (id: string, type?: string) => {
-        navigate(getEncounterRoute(id, type));
-    };
-
-    const getPatientName = (a: Appointment) => a.patient?.user?.fullName || '';
-
-    const filterItems = (items: Appointment[] = []) => {
-        if (!searchQuery) return items;
+    const filterItems = (items: Appointment[]) => {
+        if (!searchQuery.trim()) return items;
         const q = searchQuery.toLowerCase();
         return items.filter((item) => {
-            const name = getPatientName(item).toLowerCase();
-            const reason = (item.chiefComplaint || '').toLowerCase();
-            const queueNum = item.queueNumber?.toString() || '';
-            const code = item.patient?.profileCode?.toLowerCase() || '';
+            const name      = getPatientName(item).toLowerCase();
+            const reason    = (item.chiefComplaint ?? '').toLowerCase();
+            const queueNum  = item.queueNumber?.toString() ?? '';
+            const code      = item.patient?.profileCode?.toLowerCase() ?? '';
             return name.includes(q) || reason.includes(q) || queueNum.includes(q) || code.includes(q);
         });
     };
 
-    if (isLoading) {
+    // ─── Loading state ────────────────────────────────────────────────────────
+
+    if (isQueueLoading || isCompletedLoading) {
         return (
             <div className="space-y-6 p-6">
                 <div className="flex items-center justify-between">
                     <Skeleton className="h-8 w-48" />
                     <Skeleton className="h-10 w-32" />
+                </div>
+                <div className="grid grid-cols-4 gap-4">
+                    {[1, 2, 3, 4].map((i) => (
+                        <Skeleton key={i} className="h-24 w-full rounded-lg" />
+                    ))}
                 </div>
                 <div className="grid grid-cols-3 gap-6">
                     {[1, 2, 3].map((i) => (
@@ -102,27 +136,14 @@ export default function QueueManagerPage() {
         );
     }
 
-    // Logic Alignment
-    const confirmedItems = queueData?.upcomingToday || [];
-    const checkedInItems = queueData?.waitingQueue || [];
-    const waitingItems = [...checkedInItems, ...confirmedItems];
-
-    const inProgressItems = queueData?.inProgress || [];
-
-    // Stats Logic
-    const totalPatients = stats?.totalAppointments ?? stats?.totalPatients ?? queueData?.totalInQueue ?? 0;
-    const waitingCount = (queueData?.waitingQueue?.length || 0) + (queueData?.upcomingToday?.length || 0);
-    const inProgressCount = queueData?.inProgress?.length || 0;
-    const completedCount = completedToday.length || stats?.completedCount || 0;
+    // ─── Render ───────────────────────────────────────────────────────────────
 
     return (
         <div className="h-[calc(100vh-4rem)] flex flex-col space-y-4 p-4">
             <PageHeader
                 title="Quản Lý Hàng Đợi"
                 subtitle={
-                    <div className="flex items-center gap-2">
-                        <span className="text-gray-500">Phòng khám</span>
-                    </div>
+                    <span className="text-gray-500">Phòng khám</span>
                 }
                 rightSlot={
                     <div className="flex items-center gap-2">
@@ -147,31 +168,30 @@ export default function QueueManagerPage() {
                 }
             />
 
-            {/* Stats Overview */}
+            {/* ── Stats Overview — tất cả scope hôm nay ── */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {/* Tổng hôm nay */}
                 <Card>
                     <CardContent className="p-4 flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-gray-500">Tổng bệnh nhân</p>
-                            <p className="text-2xl font-bold">{totalPatients}</p>
-                            {stats?.todayCount !== undefined && (
-                                <p className="text-xs text-gray-500 mt-1">
-                                    Hôm nay: {stats.todayCount}
-                                </p>
-                            )}
+                            <p className="text-sm text-gray-500">Tổng lượt khám</p>
+                            <p className="text-2xl font-bold">{totalTodayCount}</p>
+                            <p className="text-xs text-gray-500 mt-1">Hôm nay</p>
                         </div>
                         <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
                             <Users className="h-5 w-5 text-blue-600" />
                         </div>
                     </CardContent>
                 </Card>
+
+                {/* Đang chờ = CHECKED_IN + CONFIRMED */}
                 <Card>
                     <CardContent className="p-4 flex items-center justify-between">
                         <div>
                             <p className="text-sm text-gray-500">Đang chờ</p>
                             <p className="text-2xl font-bold">{waitingCount}</p>
                             <p className="text-xs text-gray-500 mt-1">
-                                Sẵn sàng + Đã xác nhận
+                                {checkedInItems.length} sẵn sàng · {upcomingTodayItems.length} đã xác nhận
                             </p>
                         </div>
                         <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center">
@@ -179,13 +199,17 @@ export default function QueueManagerPage() {
                         </div>
                     </CardContent>
                 </Card>
+
+                {/* Đang khám = IN_PROGRESS */}
                 <Card>
                     <CardContent className="p-4 flex items-center justify-between">
                         <div>
                             <p className="text-sm text-gray-500">Đang khám</p>
                             <p className="text-2xl font-bold">{inProgressCount}</p>
                             <p className="text-xs text-gray-500 mt-1">
-                                {inProgressItems[0] ? `${getPatientName(inProgressItems[0])} đang khám` : 'Trống'}
+                                {inProgressItems[0]
+                                    ? `${getPatientName(inProgressItems[0])} đang khám`
+                                    : 'Trống'}
                             </p>
                         </div>
                         <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
@@ -193,16 +217,18 @@ export default function QueueManagerPage() {
                         </div>
                     </CardContent>
                 </Card>
+
+                {/* Đã khám = COMPLETED hôm nay */}
                 <Card>
                     <CardContent className="p-4 flex items-center justify-between">
                         <div>
                             <p className="text-sm text-gray-500">Đã khám</p>
                             <p className="text-2xl font-bold">{completedCount}</p>
-                            {stats?.completedCount !== undefined && (
-                                <p className="text-xs text-gray-500 mt-1">
-                                    Đã khám: {stats.completedCount}
-                                </p>
-                            )}
+                            <p className="text-xs text-gray-500 mt-1">
+                                {completedCount > 0
+                                    ? `${completedCount} ca hoàn thành`
+                                    : 'Chưa có ca hôm nay'}
+                            </p>
                         </div>
                         <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
                             <CheckCircle2 className="h-5 w-5 text-green-600" />
@@ -211,9 +237,10 @@ export default function QueueManagerPage() {
                 </Card>
             </div>
 
-            {/* Kanban Columns */}
+            {/* ── Kanban Columns ── */}
             <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 min-h-0 pb-4">
-                {/* Waiting Column */}
+
+                {/* Cột 1: Đang chờ (CHECKED_IN + CONFIRMED) */}
                 <Card className="flex flex-col bg-gray-50/50 border-gray-200 h-full overflow-hidden">
                     <CardHeader className="py-3 px-4 border-b bg-white shrink-0">
                         <div className="flex items-center justify-between">
@@ -228,17 +255,18 @@ export default function QueueManagerPage() {
                     </CardHeader>
                     <ScrollArea className="flex-1 p-3">
                         <div className="pb-4">
-                            {filterItems(waitingItems).map(item => (
-                                <QueueCard
-                                    key={item.id}
-                                    item={item}
-                                    onStartExam={(id) => handleStartExam(id, item.appointmentType)}
-                                    onJoinVideo={(id) => handleStartExam(id, 'VIDEO')}
-                                    onViewDetails={handleViewDetails}
-                                    onOpenRecord={handleOpenRecord}
-                                />
-                            ))}
-                            {filterItems(waitingItems).length === 0 && (
+                            {filterItems(waitingItems).length > 0 ? (
+                                filterItems(waitingItems).map((item) => (
+                                    <QueueCard
+                                        key={item.id}
+                                        item={item}
+                                        onStartExam={(id) => handleStartExam(id, item.appointmentType)}
+                                        onJoinVideo={(id) => handleStartExam(id, 'VIDEO')}
+                                        onViewDetails={handleViewDetails}
+                                        onOpenRecord={handleOpenRecord}
+                                    />
+                                ))
+                            ) : (
                                 <div className="text-center py-8 text-gray-400 text-sm">
                                     Không có bệnh nhân chờ
                                 </div>
@@ -247,7 +275,7 @@ export default function QueueManagerPage() {
                     </ScrollArea>
                 </Card>
 
-                {/* In Progress Column */}
+                {/* Cột 2: Đang khám (IN_PROGRESS) */}
                 <Card className="flex flex-col bg-blue-50/30 border-blue-100 h-full overflow-hidden">
                     <CardHeader className="py-3 px-4 border-b bg-white shrink-0">
                         <div className="flex items-center justify-between">
@@ -262,16 +290,17 @@ export default function QueueManagerPage() {
                     </CardHeader>
                     <ScrollArea className="flex-1 p-3">
                         <div className="pb-4">
-                            {filterItems(inProgressItems).map(item => (
-                                <QueueCard
-                                    key={item.id}
-                                    item={item}
-                                    onComplete={handleComplete}
-                                    onOpenRecord={handleOpenRecord}
-                                    onViewDetails={handleViewDetails}
-                                />
-                            ))}
-                            {filterItems(inProgressItems).length === 0 && (
+                            {filterItems(inProgressItems).length > 0 ? (
+                                filterItems(inProgressItems).map((item) => (
+                                    <QueueCard
+                                        key={item.id}
+                                        item={item}
+                                        onComplete={handleComplete}
+                                        onOpenRecord={handleOpenRecord}
+                                        onViewDetails={handleViewDetails}
+                                    />
+                                ))
+                            ) : (
                                 <div className="text-center py-8 text-gray-400 text-sm">
                                     Chưa có bệnh nhân đang khám
                                 </div>
@@ -280,7 +309,7 @@ export default function QueueManagerPage() {
                     </ScrollArea>
                 </Card>
 
-                {/* Completed Column */}
+                {/* Cột 3: Đã khám (COMPLETED hôm nay) */}
                 <Card className="flex flex-col bg-gray-50/50 border-gray-200 h-full overflow-hidden">
                     <CardHeader className="py-3 px-4 border-b bg-white shrink-0">
                         <div className="flex items-center justify-between">
@@ -289,21 +318,22 @@ export default function QueueManagerPage() {
                                 Đã khám
                             </div>
                             <Badge variant="outline">
-                                {filterItems(completedToday).length}
+                                {filterItems(completedTodayItems).length}
                             </Badge>
                         </div>
                     </CardHeader>
                     <ScrollArea className="flex-1 p-3">
                         <div className="pb-4">
-                            {filterItems(completedToday).map((item) => (
-                                <QueueCard
-                                    key={item.id}
-                                    item={item}
-                                    onViewDetails={handleViewDetails}
-                                    onOpenRecord={handleOpenRecord}
-                                />
-                            ))}
-                            {filterItems(completedToday).length === 0 && (
+                            {filterItems(completedTodayItems).length > 0 ? (
+                                filterItems(completedTodayItems).map((item) => (
+                                    <QueueCard
+                                        key={item.id}
+                                        item={item}
+                                        onViewDetails={handleViewDetails}
+                                        onOpenRecord={handleOpenRecord}
+                                    />
+                                ))
+                            ) : (
                                 <div className="text-center py-8 text-gray-400 text-sm">
                                     Chưa có bệnh nhân hoàn thành hôm nay
                                 </div>
@@ -311,6 +341,7 @@ export default function QueueManagerPage() {
                         </div>
                     </ScrollArea>
                 </Card>
+
             </div>
         </div>
     );

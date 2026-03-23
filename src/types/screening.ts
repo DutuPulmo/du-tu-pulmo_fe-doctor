@@ -1,4 +1,5 @@
 import type { PatientResponse } from "./patient";
+import type { DoctorProfile } from "./profile";
 
 export type ScreeningType = "XRAY" | "CT" | "MRI" | "ULTRASOUND" | "OTHER";
 export type ScreeningStatus =
@@ -98,6 +99,7 @@ export interface ScreeningConclusionResponse {
   reviewedAt: string;
   createdAt: string;
   updatedAt: string;
+  doctor: DoctorProfile
 }
 
 export interface ScreeningRequestResponse {

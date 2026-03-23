@@ -52,8 +52,6 @@ export function OverviewPage() {
     }, [stats]);
 
     const totalPatients = (stats?.patients.new ?? 0) + (stats?.patients.returning ?? 0);
-
-    // Flatten dailyBreakdown for mini charts
     const dailyData = stats?.dailyBreakdown ?? [];
 
     return (
@@ -143,7 +141,7 @@ export function OverviewPage() {
                                     Không có dữ liệu
                                 </div>
                             ) : (
-                                <ResponsiveContainer width="100%" height="100%">
+                                <ResponsiveContainer width="100%" height={300}>
                                     <ComposedChart data={dailyData} barGap={0}>
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                                         <XAxis
@@ -153,11 +151,12 @@ export function OverviewPage() {
                                             axisLine={false}
                                             tickFormatter={(val: any) => {
                                                 const d = new Date(val);
+                                                if (isNaN(d.getTime())) return String(val ?? '');
                                                 return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
                                             }}
                                         />
                                         <YAxis fontSize={11} tickLine={false} axisLine={false} allowDecimals={false} />
-                                        <Tooltip
+                                         <Tooltip
                                             contentStyle={{
                                                 backgroundColor: 'white',
                                                 borderRadius: '8px',
@@ -167,7 +166,7 @@ export function OverviewPage() {
                                             }}
                                             labelFormatter={(val: any) => {
                                                 const d = new Date(val);
-                                                return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                                                return isNaN(d.getTime()) ? String(val) : d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
                                             }}
                                         />
                                         <Legend
@@ -175,17 +174,17 @@ export function OverviewPage() {
                                             height={36}
                                             iconType="square"
                                             iconSize={10}
-                                            formatter={(value: any) => <span className="text-xs text-gray-600">{value}</span>}
+                                            formatter={(value: any) => <span className="text-xs text-gray-600">{String(value ?? '')}</span>}
                                         />
                                         <Bar
-                                            dataKey="returningPatients"
+                                            dataKey="returningVisits"
                                             name="Bệnh nhân cũ"
                                             stackId="patients"
                                             fill="#3b82f6"
                                             radius={[0, 0, 0, 0]}
                                         />
                                         <Bar
-                                            dataKey="newPatients"
+                                            dataKey="newVisits"
                                             name="Bệnh nhân mới"
                                             stackId="patients"
                                             fill="#22c55e"
@@ -198,6 +197,7 @@ export function OverviewPage() {
                                             stroke="#f97316"
                                             strokeWidth={2}
                                             dot={{ r: 3, fill: '#f97316' }}
+                                            activeDot={{ r: 5, fill: '#f97316' }}
                                         />
                                     </ComposedChart>
                                 </ResponsiveContainer>
@@ -237,14 +237,14 @@ export function OverviewPage() {
                                         </Pie>
                                         <Tooltip
                                             contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: 13 }}
-                                            formatter={(value: any, name: any) => [`${value}`, name]}
+                                            formatter={(value: any, name?: string) => [String(value), name ?? '']}
                                         />
                                         <Legend
                                             verticalAlign="bottom"
                                             height={36}
                                             iconType="circle"
                                             iconSize={8}
-                                            formatter={(value: any) => <span className="text-xs text-gray-600">{value}</span>}
+                                            formatter={(value: any) => <span className="text-xs text-gray-600">{String(value ?? '')}</span>}
                                         />
                                     </PieChart>
                                 </ResponsiveContainer>
@@ -254,27 +254,35 @@ export function OverviewPage() {
                 </Card>
             </div>
 
-            {/* Bottom Row: 3 Mini Area Charts */}
             <div className="grid gap-4 md:grid-cols-3">
                 <MiniChart
                     title="Tổng bệnh nhân"
                     value={totalPatients}
                     color="#3b82f6"
-                    data={dailyData.map((d) => ({ date: d.date, value: d.newPatients + d.returningPatients }))}
+                    data={dailyData.map((d) => ({
+                        date: d.date,
+                        value: d.newPatients + d.returningPatients, // distinct per day
+                    }))}
                     isLoading={isLoading}
                 />
                 <MiniChart
                     title="Khách hàng mới"
                     value={stats?.patients.new ?? 0}
                     color="#22c55e"
-                    data={dailyData.map((d) => ({ date: d.date, value: d.newPatients }))}
+                    data={dailyData.map((d) => ({
+                        date: d.date,
+                        value: d.newPatients, // distinct new per day
+                    }))}
                     isLoading={isLoading}
                 />
                 <MiniChart
                     title="Khách hàng cũ"
                     value={stats?.patients.returning ?? 0}
                     color="#f97316"
-                    data={dailyData.map((d) => ({ date: d.date, value: d.returningPatients }))}
+                    data={dailyData.map((d) => ({
+                        date: d.date,
+                        value: d.returningPatients, // distinct returning per day
+                    }))}
                     isLoading={isLoading}
                 />
             </div>
@@ -329,6 +337,7 @@ function MiniChart({
     data: { date: string; value: number }[];
     isLoading: boolean;
 }) {
+    const gradientId = `grad-${color.replace('#', '')}`;
     return (
         <Card className="border shadow-sm">
             <CardContent className="pt-4 pb-2">
@@ -348,18 +357,39 @@ function MiniChart({
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={data}>
                                 <defs>
-                                    <linearGradient id={`grad-${title}`} x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor={color} stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor={color} stopOpacity={0.05} />
+                                    <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor={color} stopOpacity={0.4} />
+                                        <stop offset="60%" stopColor={color} stopOpacity={0.15} />
+                                        <stop offset="100%" stopColor={color} stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
+                                <XAxis dataKey="date" hide />
+                                 <Tooltip
+                                    contentStyle={{
+                                        backgroundColor: 'white',
+                                        borderRadius: '6px',
+                                        border: '1px solid #e5e7eb',
+                                        fontSize: 12,
+                                        padding: '4px 8px',
+                                    }}
+                                    formatter={(val: any) => [val ?? 0, title]}
+                                    labelFormatter={(val: any) => {
+                                        const d = new Date(val);
+                                        if (isNaN(d.getTime())) return String(val ?? '');
+                                        return d.toLocaleDateString('vi-VN', {
+                                            day: '2-digit',
+                                            month: '2-digit',
+                                        });
+                                    }}
+                                />
                                 <Area
                                     type="monotone"
                                     dataKey="value"
                                     stroke={color}
                                     strokeWidth={2}
-                                    fill={`url(#grad-${title})`}
+                                    fill={`url(#${gradientId})`}   
                                     dot={{ r: 2, fill: color }}
+                                    activeDot={{ r: 4, fill: color }}
                                 />
                             </AreaChart>
                         </ResponsiveContainer>

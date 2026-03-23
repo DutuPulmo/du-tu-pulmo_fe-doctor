@@ -76,6 +76,8 @@ export default function ScreeningListPage() {
     screeningType: type !== 'all' ? (type as ScreeningType) : undefined,
   });
 
+  console.log(data);
+
   const resetFilters = () => {
     setPatientId('');
     setStatus('all');
