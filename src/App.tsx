@@ -25,6 +25,7 @@ const AiXrayPage = lazy(() => import('@/pages/clinical/AiXrayPage'));
 const ScreeningListPage = lazy(() => import('@/pages/clinical/ScreeningListPage'));
 const ScreeningDetailPage = lazy(() => import('@/pages/clinical/ScreeningDetailPage'));
 const MedicinePage = lazy(() => import('@/pages/treatment/MedicinePage'));
+const ReviewsPage = lazy(() => import('@/pages/doctor/ReviewsPage').then(module => ({ default: module.ReviewsPage })));
 const IssueReportPage = lazy(() => import('@/pages/issue-reports/IssueReportPage'));
 const HelpPage = lazy(() => import('@/pages/help/HelpPage'));
 const AboutPage = lazy(() => import('@/pages/help/AboutPage'));
@@ -125,6 +126,7 @@ function App() {
 
             {/* Thuốc & Điều Trị */}
             <Route path="medicine" element={<MedicinePage />} />
+            <Route path="reviews" element={<ReviewsPage />} />
 
             {/* Báo Cáo Sự Cố */}
             <Route path="issue-reports" element={<IssueReportPage />} />

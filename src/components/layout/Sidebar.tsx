@@ -24,6 +24,7 @@ import {
     AIBrainIcon,
     MedicineCabinetIcon,
     ReportIcon,
+    StarIcon,
     HelpIcon,
     InfoIcon,
     ChevronDownIcon,
@@ -179,6 +180,13 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
             href: '/doctor/issue-reports',
             icon: ReportIcon,
             allowedRoles: ['DOCTOR', 'ADMIN'],
+        },
+        {
+            name: 'Đánh giá của tôi',
+            href: '/doctor/reviews',
+            icon: StarIcon,
+            description: 'Xem và phản hồi đánh giá BN',
+            allowedRoles: ['DOCTOR'],
         }
     ];
 
