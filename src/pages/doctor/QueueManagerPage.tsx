@@ -28,7 +28,7 @@ import {
 export default function QueueManagerPage() {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
-    const { startExamAsync } = useEncounterActions();
+    const { startExamAsync, checkInAsync } = useEncounterActions();
 
     // ─── Data sources ────────────────────────────────────────────────────────
 
@@ -86,6 +86,7 @@ export default function QueueManagerPage() {
     const handleStartExam = async (id: string, appointmentType?: string) => {
         try {
             if (appointmentType === 'VIDEO') {
+                await checkInAsync(id);
                 navigate(getEncounterRoute(id, 'VIDEO'));
             } else {
                 await startExamAsync({ id, type: appointmentType });
