@@ -116,6 +116,8 @@ export function RegularScheduleModal({ open, onClose, schedules, onSave }: Regul
     const overlapsByDay = new Map<number, Set<string>>();
     let hasAnyOverlap = false;
     let hasInvalidTime = false;
+    let hasInvalidCapacity = false;
+    let hasInvalidDuration = false;
 
     daysData.forEach(day => {
         if (day.enabled) {
@@ -128,11 +130,17 @@ export function RegularScheduleModal({ open, onClose, schedules, onSave }: Regul
                 if (s.startTime >= s.endTime) {
                     hasInvalidTime = true;
                 }
+                if (s.slotCapacity < 1) {
+                    hasInvalidCapacity = true;
+                }
+                if (s.slotDuration < 10) {
+                    hasInvalidDuration = true;
+                }
             });
         }
     });
 
-    const isFormValid = !hasAnyOverlap && !hasInvalidTime && !saving;
+    const isFormValid = !hasAnyOverlap && !hasInvalidTime && !hasInvalidCapacity && !hasInvalidDuration && !saving;
 
     // Effect: Khởi tạo dữ liệu daysData từ props schedules khi modal mở
     useEffect(() => {
@@ -596,16 +604,24 @@ export function RegularScheduleModal({ open, onClose, schedules, onSave }: Regul
                                                         min={1}
                                                         value={slot.slotCapacity}
                                                         onChange={(e) => updateSlot(day.dayOfWeek, slot.tempId, { slotCapacity: Number(e.target.value) })}
+                                                        className={cn(slot.slotCapacity < 1 && "border-red-500 focus-visible:ring-red-500")}
                                                     />
+                                                    {slot.slotCapacity < 1 && (
+                                                        <p className="text-[10px] text-red-500 font-medium mt-1">Tối thiểu 1 lượt</p>
+                                                    )}
                                                 </div>
                                                 <div>
                                                     <Label className="text-red-500">Thời gian 1 slot (phút) *</Label>
                                                     <Input
                                                         type="number"
-                                                        min={5}
+                                                        min={10}
                                                         value={slot.slotDuration}
                                                         onChange={(e) => updateSlot(day.dayOfWeek, slot.tempId, { slotDuration: Number(e.target.value) })}
+                                                        className={cn(slot.slotDuration < 10 && "border-red-500 focus-visible:ring-red-500")}
                                                     />
+                                                    {slot.slotDuration < 10 && (
+                                                        <p className="text-[10px] text-red-500 font-medium mt-1">Tối thiểu 10 phút</p>
+                                                    )}
                                                 </div>
                                             </div>
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -95,6 +96,13 @@ export function ScheduleForm({ open, onClose, onSubmit, schedule, scheduleType }
     const isTimeOff = scheduleType === ScheduleType.TIME_OFF;
     const isRegular = scheduleType === ScheduleType.REGULAR;
 
+    // Validation
+    const isInvalidCapacity = !isTimeOff && (formData.slotCapacity ?? 0) < 1;
+    const isInvalidDuration = !isTimeOff && (formData.slotDuration ?? 0) < 10;
+    const isInvalidTime = formData.startTime >= formData.endTime;
+
+    const isFormValid = !isInvalidCapacity && !isInvalidDuration && !isInvalidTime;
+
     return (
         <Dialog open={open} onOpenChange={onClose}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -170,24 +178,29 @@ export function ScheduleForm({ open, onClose, onSubmit, schedule, scheduleType }
                     {/* --- Nhóm: Giờ Bắt đầu / Kết thúc --- */}
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="startTime">Giờ bắt đầu <span className="text-red-500">*</span></Label>
+                            <Label htmlFor="startTime" className={cn(isInvalidTime && "text-red-500")}>Giờ bắt đầu <span className="text-red-500">*</span></Label>
                             <Input
                                 id="startTime"
                                 type="time"
                                 value={formData.startTime}
                                 onChange={(e) => handleChange('startTime', e.target.value)}
                                 required
+                                className={cn(isInvalidTime && "border-red-500 focus-visible:ring-red-500")}
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="endTime">Giờ kết thúc <span className="text-red-500">*</span></Label>
+                            <Label htmlFor="endTime" className={cn(isInvalidTime && "text-red-500")}>Giờ kết thúc <span className="text-red-500">*</span></Label>
                             <Input
                                 id="endTime"
                                 type="time"
                                 value={formData.endTime}
                                 onChange={(e) => handleChange('endTime', e.target.value)}
                                 required
+                                className={cn(isInvalidTime && "border-red-500 focus-visible:ring-red-500")}
                             />
+                            {isInvalidTime && (
+                                <p className="text-[10px] text-red-500 font-medium">Giờ kết thúc phải sau giờ bắt đầu</p>
+                            )}
                         </div>
                     </div>
 
@@ -196,7 +209,7 @@ export function ScheduleForm({ open, onClose, onSubmit, schedule, scheduleType }
                             {/* --- Nhóm: Cấu hình Slot --- */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="slotCapacity">Số lượt khám trên một slot <span className="text-red-500">*</span></Label>
+                                    <Label htmlFor="slotCapacity" className={cn(isInvalidCapacity && "text-red-500")}>Số lượt khám trên một slot <span className="text-red-500">*</span></Label>
                                     <Input
                                         id="slotCapacity"
                                         type="number"
@@ -205,10 +218,14 @@ export function ScheduleForm({ open, onClose, onSubmit, schedule, scheduleType }
                                         value={formData.slotCapacity}
                                         onChange={(e) => handleChange('slotCapacity', parseInt(e.target.value))}
                                         required
+                                        className={cn(isInvalidCapacity && "border-red-500 focus-visible:ring-red-500")}
                                     />
+                                    {isInvalidCapacity && (
+                                        <p className="text-[10px] text-red-500 font-medium">Tối thiểu 1 lượt khám</p>
+                                    )}
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="slotDuration">Thời gian 1 slot (phút) <span className="text-red-500">*</span></Label>
+                                    <Label htmlFor="slotDuration" className={cn(isInvalidDuration && "text-red-500")}>Thời gian 1 slot (phút) <span className="text-red-500">*</span></Label>
                                     <Input
                                         id="slotDuration"
                                         type="number"
@@ -218,7 +235,11 @@ export function ScheduleForm({ open, onClose, onSubmit, schedule, scheduleType }
                                         onChange={(e) => handleChange('slotDuration', parseInt(e.target.value))}
                                         placeholder="Phút"
                                         required
+                                        className={cn(isInvalidDuration && "border-red-500 focus-visible:ring-red-500")}
                                     />
+                                    {isInvalidDuration && (
+                                        <p className="text-[10px] text-red-500 font-medium">Tối thiểu 10 phút</p>
+                                    )}
                                 </div>
                             </div>
 
@@ -307,7 +328,7 @@ export function ScheduleForm({ open, onClose, onSubmit, schedule, scheduleType }
                         <Button type="button" variant="outline" onClick={onClose}>
                             Đóng
                         </Button>
-                        <Button type="submit">{schedule ? 'Cập Nhật' : 'Thêm mới'}</Button>
+                        <Button type="submit" disabled={!isFormValid}>{schedule ? 'Cập Nhật' : 'Thêm mới'}</Button>
                     </DialogFooter>
                 </form>
             </DialogContent>
