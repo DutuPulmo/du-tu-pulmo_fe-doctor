@@ -34,6 +34,7 @@ interface MedicalRecordWorkspaceProps {
     vitalSignsChanged: boolean;
     followUpRequired: boolean;
     nextAppointmentDate: string;
+    isWithinReopenWindow?: boolean;
 
     // States
     canEdit: boolean;
@@ -126,6 +127,7 @@ export const MedicalRecordWorkspace = React.memo(function MedicalRecordWorkspace
     onSetFollowUpRequired,
     onSetNextAppointmentDate,
     onUpdateLinking,
+    isWithinReopenWindow,
     headerRightSlot,
     topBannerSlot,
     sidePanelSlot,
@@ -326,12 +328,32 @@ export const MedicalRecordWorkspace = React.memo(function MedicalRecordWorkspace
         }
     };
 
+    const handleChiefComplaintChange = (val: string) => {
+        const HTML_TAG_REGEX = /<[^>]+>/;
+        const BASE64_IMAGE_REGEX = /data:image\//i;
+
+        if (HTML_TAG_REGEX.test(val) || BASE64_IMAGE_REGEX.test(val)) {
+            toast.error('Lý do khám chỉ được chứa văn bản thuần, không được có thẻ HTML hoặc ảnh.');
+            // Strip HTML/Base64 or just stop update? 
+            // BE policy is strict, so we stop update and notify.
+            return;
+        }
+        onUpdateRecord('chiefComplaint', val);
+    };
+
     return (
         <div className="h-full flex flex-col min-h-0">
             {/* ===== Top Bar ===== */}
             <div className="bg-white border-b sticky top-0 z-20">
                 {/* Banner slot */}
                 {topBannerSlot}
+
+                {isWithinReopenWindow && (
+                    <div className="bg-blue-50 border-b border-blue-100 px-6 py-2 flex items-center gap-2 text-blue-700 text-sm">
+                        <AlertCircle className="h-4 w-4" />
+                        <span>Hồ sơ này đã hoàn tất nhưng bạn vẫn có thể mở lại để chỉnh sửa trong vòng 48 giờ kể từ khi đóng.</span>
+                    </div>
+                )}
 
                 <div className="px-3 md:px-6 py-2 md:py-3 flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -550,7 +572,7 @@ export const MedicalRecordWorkspace = React.memo(function MedicalRecordWorkspace
                                         <Textarea
                                             value={medicalRecord?.chiefComplaint || ''}
                                             placeholder="Nhập lý do khám..."
-                                            onChange={(e) => onUpdateRecord('chiefComplaint', e.target.value)}
+                                            onChange={(e) => handleChiefComplaintChange(e.target.value)}
                                             disabled={!canEdit || (editingPrescription != null && editingPrescription.status !== 'ACTIVE')}
                                             className="min-h-[80px]"
                                         />

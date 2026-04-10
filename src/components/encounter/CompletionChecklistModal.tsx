@@ -68,10 +68,17 @@ export function CompletionChecklistModal({
         },
         {
             id: 'assessment',
-            label: 'Đánh giá / Chẩn đoán',
+            label: 'Đánh giá / Nhận xét',
             required: true,
             completed: !!medicalRecord?.assessment,
             value: medicalRecord?.assessment,
+        },
+        {
+            id: 'diagnosis',
+            label: 'Chẩn đoán',
+            required: true,
+            completed: !!medicalRecord?.diagnosis,
+            value: medicalRecord?.diagnosis,
         },
         {
             id: 'plan',

@@ -320,12 +320,18 @@ export const PrescriptionEditor = React.forwardRef<PrescriptionEditorHandle, Pre
             toast.error('Vui lòng thêm ít nhất một loại thuốc');
             return;
         }
-        const invalidItem = items.find((item) => {
+        const invalidFrequencyItem = items.find((item) => {
             const totalDaily = (item.morning || 0) + (item.noon || 0) + (item.afternoon || 0) + (item.evening || 0);
             return totalDaily <= 0;
         });
-        if (invalidItem) {
-            toast.error('Vui lòng nhập ít nhất 1 trong các lần dùng (sáng/trưa/chiều/tối).');
+        if (invalidFrequencyItem) {
+            toast.error(`Thuốc "${invalidFrequencyItem.medicineName}" chưa có liều dùng hàng ngày.`);
+            return;
+        }
+
+        const invalidDurationItem = items.find((item) => (item.durationDays || 0) <= 0);
+        if (invalidDurationItem) {
+            toast.error(`Thuốc "${invalidDurationItem.medicineName}" phải có số ngày sử dụng > 0.`);
             return;
         }
 

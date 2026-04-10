@@ -60,6 +60,15 @@ export default function MedicalRecordDetailPage() {
     } : null;
 
     const isRecordClosed = record?.status === MedicalRecordStatusEnum.COMPLETED;
+    const isWithinReopenWindow = (() => {
+        if (!record || record.status !== MedicalRecordStatusEnum.COMPLETED) return false;
+        if (!record.completedAt) return false;
+        const completedDate = new Date(record.completedAt);
+        const now = new Date();
+        const diffMs = now.getTime() - completedDate.getTime();
+        const diffHours = diffMs / (1000 * 60 * 60);
+        return diffHours <= 48;
+    })();
 
     // Form State
     const [formData, setFormData] = useState<UpdateMedicalRecordDto & {
@@ -243,6 +252,14 @@ export default function MedicalRecordDetailPage() {
     });
 
     const handleInputChange = (field: keyof typeof formData, value: unknown) => {
+        if (field === 'chiefComplaint' && typeof value === 'string') {
+            const HTML_TAG_REGEX = /<[^>]+>/;
+            const BASE64_IMAGE_REGEX = /data:image\//i;
+            if (HTML_TAG_REGEX.test(value) || BASE64_IMAGE_REGEX.test(value)) {
+                toast.error('Lý do khám chỉ được chứa văn bản thuần, không được có thẻ HTML hoặc ảnh.');
+                return;
+            }
+        }
         setFormData(prev => ({ ...prev, [field]: value }));
         setIsDirty(true);
     };
@@ -480,6 +497,12 @@ export default function MedicalRecordDetailPage() {
 
             {/* Main Content */}
             <div className="flex-1 min-h-0 p-2">
+                {isWithinReopenWindow && (
+                    <div className="mb-2 bg-blue-50 border border-blue-100 px-4 py-2 rounded-lg flex items-center gap-2 text-blue-700 text-sm shadow-sm">
+                        <History className="h-4 w-4" />
+                        <span>Hồ sơ này đã hoàn tất nhưng bạn vẫn có thể mở lại để chỉnh sửa trong vòng 48 giờ kể từ khi đóng.</span>
+                    </div>
+                )}
                 <ResizablePanelGroup direction="horizontal" className="h-full">
 
                     {/* Left Column */}

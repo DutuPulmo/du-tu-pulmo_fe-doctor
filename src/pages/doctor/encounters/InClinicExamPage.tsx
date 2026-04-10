@@ -98,6 +98,7 @@ export default function InClinicExamPage() {
                 autoSaveStatus={encounter.autoSaveStatus}
                 autoSaveTime={encounter.autoSaveTime}
                 isDirty={encounter.isDirty}
+                isWithinReopenWindow={encounter.isWithinReopenWindow}
                 onUpdateRecord={encounter.updateRecord}
                 onUpdateVitals={(field, value) => {
                     encounter.setEditableVitals(prev => ({ ...prev, [field]: value }));

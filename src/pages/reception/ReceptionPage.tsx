@@ -150,7 +150,6 @@ export const ReceptionPage = () => {
         const timeDiff = differenceInMinutes(scheduledTime, now);
         const isPaid = Number(appt.paidAmount) >= Number(appt.feeAmount);
         const apptIsToday = isToday(scheduledTime);
-        console.log(appt.status)
         if (appt.status !== 'CONFIRMED') {
             return { canCheckIn: false, reason: '', type: 'error' };
         }
@@ -562,7 +561,8 @@ export const ReceptionPage = () => {
                                             {new Intl.NumberFormat('vi-VN').format(Number(appt.feeAmount))}đ
                                         </TableCell>
                                         <TableCell className="py-3 whitespace-nowrap">
-                                            {Number(appt.paidAmount) >= Number(appt.feeAmount) ? (
+                                            {/* {Number(appt.paidAmount) >= Number(appt.feeAmount) ? ( */}
+                                            {appt.paymentStatus === 'PAID' ? (
                                                 <span className="inline-flex items-center gap-1.5 px-2 py-1 text-green-700 bg-green-50 rounded-md font-medium text-[11px]">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
                                                     Đã thanh toán

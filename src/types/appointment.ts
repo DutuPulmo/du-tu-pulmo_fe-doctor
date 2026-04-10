@@ -1,21 +1,19 @@
-import { 
+import {
   AppointmentSource,
-  AppointmentStatus, 
-  AppointmentSubType, 
-  AppointmentType 
-} from '@/lib/constants';
+  AppointmentStatus,
+  AppointmentSubType,
+  AppointmentType,
+} from "@/lib/constants";
 
 export { AppointmentStatus, AppointmentType };
 
 export const Gender = {
-  MALE: 'MALE',
-  FEMALE: 'FEMALE',
-  OTHER: 'OTHER'
+  MALE: "MALE",
+  FEMALE: "FEMALE",
+  OTHER: "OTHER",
 } as const;
-export type Gender = typeof Gender[keyof typeof Gender];
+export type Gender = (typeof Gender)[keyof typeof Gender];
 
-
-  
 export interface Patient {
   id: string;
   profileCode?: string;
@@ -107,6 +105,7 @@ export interface Appointment {
   paidAmount: string;
 
   paymentId?: string;
+  paymentStatus?: string;
 
   refunded: boolean;
   refundAmount?: string;
@@ -137,7 +136,7 @@ export interface Appointment {
 
   reminder24hSent?: boolean;
   reminder1hSent?: boolean;
-  reminderSentAt?: string; 
+  reminderSentAt?: string;
   confirmationSent?: boolean;
 
   checkInTime?: string;
@@ -201,7 +200,6 @@ export interface CheckInByNumberDto {
   appointmentNumber: string;
 }
 
-
 export interface AppointmentQuery {
   page?: number;
   limit?: number;
@@ -210,19 +208,19 @@ export interface AppointmentQuery {
   endDate?: string;
   search?: string;
   sort?: string;
-  order?: 'ASC' | 'DESC';
+  order?: "ASC" | "DESC";
 }
 
 export interface PaginatedAppointment {
-    items: Appointment[];
-    meta: {
-        currentPage: number;
-        itemsPerPage: number;
-        totalItems: number;
-        totalPages: number;
-        hasNextPage: boolean;
-        hasPreviousPage: boolean;
-    }
+  items: Appointment[];
+  meta: {
+    currentPage: number;
+    itemsPerPage: number;
+    totalItems: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
 }
 
 // =========================
@@ -231,7 +229,7 @@ export interface PaginatedAppointment {
 export interface CreateAppointmentDto {
   timeSlotId: string;
   patientId: string;
-  appointmentType?: AppointmentType | 'IN_CLINIC' | 'VIDEO';
+  appointmentType?: AppointmentType | "IN_CLINIC" | "VIDEO";
   hospitalId?: string;
   subType?: AppointmentSubType;
   sourceType?: AppointmentSource;
@@ -277,7 +275,7 @@ export interface CompleteExaminationDto {
 // Statistics & Video
 // =========================
 export interface AppointmentStatistics {
-    totalAppointments: number;
+  totalAppointments: number;
   completedCount: number;
   cancelledCount: number;
   pendingCount: number;
@@ -318,4 +316,3 @@ export interface VideoCallJoinResponse {
 // =========================
 // End of file
 // =========================
-

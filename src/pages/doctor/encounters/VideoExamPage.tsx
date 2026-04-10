@@ -102,6 +102,7 @@ export default function VideoExamPage() {
             autoSaveStatus={encounter.autoSaveStatus}
             autoSaveTime={encounter.autoSaveTime}
             isDirty={encounter.isDirty}
+            isWithinReopenWindow={encounter.isWithinReopenWindow}
             onUpdateRecord={encounter.updateRecord}
             onUpdateVitals={(field, value) => {
               encounter.setEditableVitals((prev) => ({

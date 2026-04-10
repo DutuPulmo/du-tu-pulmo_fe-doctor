@@ -194,6 +194,7 @@ export interface MedicalRecord {
   // Timestamps
   createdAt: Date;
   updatedAt: Date;
+  completedAt?: Date | string | null;
 }
 
 // ===== EXAMINATION VIEW DTO =====
@@ -458,6 +459,7 @@ export interface MedicalRecordDetailResponse {
   status: string;
   createdAt: string;
   updatedAt: string;
+  completedAt?: string | Date | null;
   
   // Linking
   previousRecordId?: string;
