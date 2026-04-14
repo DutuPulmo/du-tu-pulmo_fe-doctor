@@ -355,18 +355,20 @@ export const MedicalRecordWorkspace = React.memo(function MedicalRecordWorkspace
                     </div>
                 )}
 
-                <div className="px-3 md:px-6 py-2 md:py-3 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                <div className="px-3 md:px-6 py-2 md:py-3 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
                         <Button variant="ghost" size="icon" onClick={toggleSidebar}>
                             <PanelLeft className="h-5 w-5" />
                             <span className="sr-only">Đóng/mở thanh bên</span>
                         </Button>
-                        <div className="text-sm font-semibold text-slate-900">
-                            {appointment?.patient?.profileCode} - {appointment?.patient?.user?.fullName}
+                        <div className="flex-1 min-w-0">
+                            <div className="text-sm font-semibold text-slate-900 truncate" title={`${appointment?.patient?.profileCode} - ${appointment?.patient?.user?.fullName}`}>
+                                {appointment?.patient?.profileCode} - {appointment?.patient?.user?.fullName}
+                            </div>
                         </div>
 
                         {!isLocked ? (
-                            <Badge className="bg-green-500 text-white">
+                            <Badge className="bg-green-500 text-white shrink-0">
                                 <span className="animate-pulse mr-1">◉</span> Đang khám
                             </Badge>
                         ) : (
@@ -376,25 +378,25 @@ export const MedicalRecordWorkspace = React.memo(function MedicalRecordWorkspace
                         )}
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 shrink-0">
                         {/* Auto-save status */}
-                        <div className="hidden md:flex items-center gap-2 text-sm text-gray-500">
+                        <div className="hidden md:flex items-center gap-2 text-sm text-gray-500 shrink-0">
                             {autoSaveStatus === 'saving' && (
                                 <>
                                     <Loader2 className="h-3 w-3 animate-spin" />
-                                    <span>Đang lưu...</span>
+                                    <span className="whitespace-nowrap">Đang lưu...</span>
                                 </>
                             )}
                             {autoSaveStatus === 'saved' && autoSaveTime && (
                                 <>
                                     <CheckCircle2 className="h-3 w-3 text-green-500" />
-                                    <span>Tự động lưu {format(autoSaveTime, 'HH:mm')}</span>
+                                    <span className="whitespace-nowrap">Tự động lưu {format(autoSaveTime, 'HH:mm')}</span>
                                 </>
                             )}
                             {autoSaveStatus === 'error' && (
                                 <>
                                     <AlertCircle className="h-3 w-3 text-red-500" />
-                                    <span>Lỗi tự động lưu</span>
+                                    <span className="whitespace-nowrap">Lỗi tự động lưu</span>
                                 </>
                             )}
                         </div>

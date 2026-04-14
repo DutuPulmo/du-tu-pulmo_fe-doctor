@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/store/useAppStore';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -115,7 +115,7 @@ export default function MedicalRecordDetailPage() {
     });
 
     useEffect(() => {
-        if (record) {
+        if (record && !isInitializedRef.current) {
             setFormData(prev => ({
                 ...prev,
 
@@ -179,6 +179,7 @@ export default function MedicalRecordDetailPage() {
                 isDigitallySigned: record.signedStatus === 'SIGNED',
             }));
             setIsDirty(false);
+            isInitializedRef.current = true;
         }
     }, [record]);
 
@@ -251,7 +252,27 @@ export default function MedicalRecordDetailPage() {
         },
     });
 
+    const isQuillEmpty = (value: string) => {
+        if (!value) return true;
+        const normalized = value.trim();
+        return normalized === '<p></p>' || normalized === '<p><br></p>' || normalized === '<br>' || normalized === '';
+    };
+
     const handleInputChange = (field: keyof typeof formData, value: unknown) => {
+        // Guard against ReactQuill initial normalization clobbering valid data
+        if (field === 'presentIllness' && typeof value === 'string') {
+            const isEmptyQuillValue = isQuillEmpty(value);
+            const originalValue = record?.presentIllness;
+            const hasOriginalValue = originalValue && !isQuillEmpty(originalValue);
+
+            // If incoming value is empty-ish but record has real data, AND we haven't manually cleared it yet
+            // (Note: this might need refinement if user intentionally clears the field)
+            if (isEmptyQuillValue && hasOriginalValue && !isDirty) {
+                console.log('Skipping clobbering onChange from Quill');
+                return;
+            }
+        }
+
         if (field === 'chiefComplaint' && typeof value === 'string') {
             const HTML_TAG_REGEX = /<[^>]+>/;
             const BASE64_IMAGE_REGEX = /data:image\//i;
@@ -683,6 +704,7 @@ export default function MedicalRecordDetailPage() {
                                                     ) : (
                                                         <div className="rounded-lg border border-gray-300 overflow-hidden bg-white">
                                                             <ReactQuill
+                                                                key={record?.id || 'loading'}
                                                                 theme="snow"
                                                                 value={formData.presentIllness || ''}
                                                                 onChange={(value) => handleInputChange('presentIllness', value)}

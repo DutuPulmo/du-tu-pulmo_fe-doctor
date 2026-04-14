@@ -29,12 +29,19 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Calendar } from '@/components/ui/calendar';
 import { QrScannerModal } from '@/components/appointment/QrScannerModal';
 import {
     Search,
     Calendar as CalendarIcon,
     Filter,
+    MoreHorizontal,
     ChevronLeft,
     ChevronRight,
     ChevronsLeft,
@@ -100,7 +107,7 @@ export const ReceptionPage = () => {
     const doctors = doctorsData?.items || [];
 
     // Fetch appointments
-    const { data, isLoading } = useQuery({
+    const { data, isLoading, refetch } = useQuery({
         queryKey: [
             'appointments',
             'reception',
@@ -141,7 +148,7 @@ export const ReceptionPage = () => {
         const now = new Date();
         const scheduledTime = new Date(appt.scheduledAt);
         const timeDiff = differenceInMinutes(scheduledTime, now);
-        // const isPaid = Number(appt.paidAmount) >= Number(appt.feeAmount);
+        const isPaid = Number(appt.paidAmount) >= Number(appt.feeAmount);
         const apptIsToday = isToday(scheduledTime);
         if (appt.status !== 'CONFIRMED') {
             return { canCheckIn: false, reason: '', type: 'error' };

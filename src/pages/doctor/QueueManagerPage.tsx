@@ -86,7 +86,13 @@ export default function QueueManagerPage() {
     const handleStartExam = async (id: string, appointmentType?: string) => {
         try {
             if (appointmentType === 'VIDEO') {
-                await checkInAsync(id);
+                // Tìm appointment trong data local để check status hiện tại
+                const appt = [...waitingItems, ...inProgressItems].find(a => a.id === id);
+                
+                // Chỉ gọi check-in nếu status là CONFIRMED (Sẵn sàng/Chờ check-in)
+                if (appt?.status === AppointmentStatus.CONFIRMED) {
+                    await checkInAsync(id);
+                }
                 navigate(getEncounterRoute(id, 'VIDEO'));
             } else {
                 await startExamAsync({ id, type: appointmentType });

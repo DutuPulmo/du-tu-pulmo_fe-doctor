@@ -1,5 +1,5 @@
-import api from '@/services/api';
-import { API_BASE_URL } from '@/lib/constants';
+import api from "@/services/api";
+import { API_BASE_URL } from "@/lib/constants";
 import type {
   MedicalRecord,
   Prescription,
@@ -11,9 +11,9 @@ import type {
   UpdateMedicalRecordDto,
   VitalSign,
   CreateVitalSignDto,
-} from '@/types/medical';
-import type { UploadAnalyzeResponse } from '@/types/screening';
-import screeningService from '@/services/screening.service';
+} from "@/types/medical";
+import type { UploadAnalyzeResponse } from "@/types/screening";
+import screeningService from "@/services/screening.service";
 
 const normalizeMedicalRecord = (record: MedicalRecord): MedicalRecord => {
   const presentIllness =
@@ -21,7 +21,10 @@ const normalizeMedicalRecord = (record: MedicalRecord): MedicalRecord => {
   const medicalHistory =
     record.medicalHistory ?? (record as any).pastMedicalHistory;
 
-  if (presentIllness === record.presentIllness && medicalHistory === record.medicalHistory) {
+  if (
+    presentIllness === record.presentIllness &&
+    medicalHistory === record.medicalHistory
+  ) {
     return record;
   }
 
@@ -32,8 +35,9 @@ const normalizeMedicalRecord = (record: MedicalRecord): MedicalRecord => {
   };
 };
 
-const normalizeMedicalRecordList = (records: MedicalRecord[]): MedicalRecord[] =>
-  records.map(normalizeMedicalRecord);
+const normalizeMedicalRecordList = (
+  records: MedicalRecord[],
+): MedicalRecord[] => records.map(normalizeMedicalRecord);
 
 /**
  * Medical Service
@@ -49,16 +53,24 @@ export const medicalService = {
    * @roles PATIENT (own), DOCTOR (own), ADMIN
    */
   getMedicalRecord: async (appointmentId: string): Promise<MedicalRecord> => {
-    const response = await api.get<MedicalRecord>(`/appointments/${appointmentId}/medical-record`);
+    const response = await api.get<MedicalRecord>(
+      `/appointments/${appointmentId}/medical-record`,
+    );
     return normalizeMedicalRecord(response.data);
   },
 
   /**
-   * Update medical record by ID 
+   * Update medical record by ID
    * @roles DOCTOR (own), ADMIN
    */
-  updateMedicalRecord: async (id: string, dto: UpdateMedicalRecordDto): Promise<MedicalRecord> => {
-    const response = await api.put<MedicalRecord>(`/medical/records/${id}`, dto);
+  updateMedicalRecord: async (
+    id: string,
+    dto: UpdateMedicalRecordDto,
+  ): Promise<MedicalRecord> => {
+    const response = await api.put<MedicalRecord>(
+      `/medical/records/${id}`,
+      dto,
+    );
     return normalizeMedicalRecord(response.data);
   },
 
@@ -70,7 +82,9 @@ export const medicalService = {
    * Get vital signs for an appointment
    */
   getVitalSigns: async (appointmentId: string): Promise<VitalSign[]> => {
-    const response = await api.get<VitalSign[]>(`/appointments/${appointmentId}/vital-signs`);
+    const response = await api.get<VitalSign[]>(
+      `/appointments/${appointmentId}/vital-signs`,
+    );
     return response.data;
   },
 
@@ -78,8 +92,14 @@ export const medicalService = {
    * Add vital sign to an appointment
    * @roles DOCTOR (own), ADMIN
    */
-  addVitalSign: async (appointmentId: string, dto: CreateVitalSignDto): Promise<VitalSign> => {
-    const response = await api.post<VitalSign>(`/appointments/${appointmentId}/vital-signs`, dto);
+  addVitalSign: async (
+    appointmentId: string,
+    dto: CreateVitalSignDto,
+  ): Promise<VitalSign> => {
+    const response = await api.post<VitalSign>(
+      `/appointments/${appointmentId}/vital-signs`,
+      dto,
+    );
     return response.data;
   },
 
@@ -91,7 +111,9 @@ export const medicalService = {
    * Get prescriptions for an appointment
    */
   getPrescriptions: async (appointmentId: string): Promise<Prescription[]> => {
-    const response = await api.get<Prescription[]>(`/appointments/${appointmentId}/prescriptions`);
+    const response = await api.get<Prescription[]>(
+      `/appointments/${appointmentId}/prescriptions`,
+    );
     return response.data;
   },
 
@@ -99,8 +121,14 @@ export const medicalService = {
    * Create prescription for an appointment
    * @roles DOCTOR (own), ADMIN
    */
-  createPrescription: async (appointmentId: string, dto: CreatePrescriptionDto): Promise<Prescription> => {
-    const response = await api.post<Prescription>(`/appointments/${appointmentId}/prescriptions`, dto);
+  createPrescription: async (
+    appointmentId: string,
+    dto: CreatePrescriptionDto,
+  ): Promise<Prescription> => {
+    const response = await api.post<Prescription>(
+      `/appointments/${appointmentId}/prescriptions`,
+      dto,
+    );
     return response.data;
   },
 
@@ -108,8 +136,13 @@ export const medicalService = {
    * Cancel a prescription
    * @roles DOCTOR (own), ADMIN
    */
-  cancelPrescription: async (appointmentId: string, prescriptionId: string): Promise<Prescription> => {
-    const response = await api.post<Prescription>(`/appointments/${appointmentId}/prescriptions/${prescriptionId}/cancel`);
+  cancelPrescription: async (
+    appointmentId: string,
+    prescriptionId: string,
+  ): Promise<Prescription> => {
+    const response = await api.post<Prescription>(
+      `/appointments/${appointmentId}/prescriptions/${prescriptionId}/cancel`,
+    );
     return response.data;
   },
 
@@ -117,8 +150,15 @@ export const medicalService = {
    * Update a prescription
    * @roles DOCTOR (own)
    */
-  updatePrescription: async (appointmentId: string, prescriptionId: string, dto: CreatePrescriptionDto): Promise<Prescription> => {
-    const response = await api.put<Prescription>(`/appointments/${appointmentId}/prescriptions/${prescriptionId}`, dto);
+  updatePrescription: async (
+    appointmentId: string,
+    prescriptionId: string,
+    dto: CreatePrescriptionDto,
+  ): Promise<Prescription> => {
+    const response = await api.put<Prescription>(
+      `/appointments/${appointmentId}/prescriptions/${prescriptionId}`,
+      dto,
+    );
     return response.data;
   },
 
@@ -131,7 +171,9 @@ export const medicalService = {
    * @roles PATIENT (self), DOCTOR (treated), ADMIN
    */
   getPatientRecords: async (patientId: string): Promise<MedicalRecord[]> => {
-    const response = await api.get<MedicalRecord[]>(`/medical/records/patient/${patientId}`);
+    const response = await api.get<MedicalRecord[]>(
+      `/medical/records/patient/${patientId}`,
+    );
     return normalizeMedicalRecordList(response.data || []);
   },
 
@@ -139,7 +181,9 @@ export const medicalService = {
    * Get all vital signs for a patient (for trend charts)
    */
   getPatientVitalSigns: async (patientId: string): Promise<VitalSign[]> => {
-    const response = await api.get<VitalSign[]>(`/medical/vital-signs/patient/${patientId}`);
+    const response = await api.get<VitalSign[]>(
+      `/medical/vital-signs/patient/${patientId}`,
+    );
     return response.data;
   },
 
@@ -147,7 +191,7 @@ export const medicalService = {
    * Get medical records created by the current doctor
    */
   getMyRecords: async (): Promise<MedicalRecord[]> => {
-    const response = await api.get<MedicalRecord[]>('/medical/records/my');
+    const response = await api.get<MedicalRecord[]>("/medical/records/my");
     return normalizeMedicalRecordList(response.data || []);
   },
 
@@ -155,22 +199,28 @@ export const medicalService = {
    * Get prescriptions created by the current doctor
    */
   getMyPrescriptions: async (): Promise<Prescription[]> => {
-    const response = await api.get<Prescription[]>('/medical/prescriptions/my');
+    const response = await api.get<Prescription[]>("/medical/prescriptions/my");
     return response.data || [];
   },
 
   /**
    * Get all prescriptions for a patient
    */
-  getPatientPrescriptions: async (patientId: string): Promise<Prescription[]> => {
-    const response = await api.get<Prescription[]>(`/medical/prescriptions/patient/${patientId}`);
+  getPatientPrescriptions: async (
+    patientId: string,
+  ): Promise<Prescription[]> => {
+    const response = await api.get<Prescription[]>(
+      `/medical/prescriptions/patient/${patientId}`,
+    );
     return response.data;
   },
 
   /**
    * Get complete medical history for a patient
    */
-  getPatientHistory: async (patientId: string): Promise<PatientMedicalHistory> => {
+  getPatientHistory: async (
+    patientId: string,
+  ): Promise<PatientMedicalHistory> => {
     const [records, vitalSigns, prescriptions] = await Promise.all([
       medicalService.getPatientRecords(patientId),
       medicalService.getPatientVitalSigns(patientId),
@@ -197,7 +247,7 @@ export const medicalService = {
     file: File,
     screeningId?: string,
     _modelVersion?: string,
-    medicalRecordId?: string
+    medicalRecordId?: string,
   ): Promise<UploadAnalyzeResponse> => {
     return screeningService.uploadAndAnalyze({
       patientId,
@@ -216,8 +266,14 @@ export const medicalService = {
    * @roles DOCTOR (own)
    * @condition Record must be COMPLETED status
    */
-  signMedicalRecord: async (recordId: string, dto: SignMedicalRecordDto): Promise<MedicalRecordDetailResponse> => {
-    const response = await api.post<MedicalRecordDetailResponse>(`/medical/records/${recordId}/sign`, dto);
+  signMedicalRecord: async (
+    recordId: string,
+    dto: SignMedicalRecordDto,
+  ): Promise<MedicalRecordDetailResponse> => {
+    const response = await api.post<MedicalRecordDetailResponse>(
+      `/medical/records/${recordId}/sign`,
+      dto,
+    );
     return response.data;
   },
 
@@ -226,7 +282,9 @@ export const medicalService = {
    * @roles DOCTOR (own), ADMIN
    */
   completeMedicalRecord: async (recordId: string): Promise<MedicalRecord> => {
-    const response = await api.post<MedicalRecord>(`/medical/records/${recordId}/complete`);
+    const response = await api.post<MedicalRecord>(
+      `/medical/records/${recordId}/complete`,
+    );
     return normalizeMedicalRecord(response.data);
   },
 
@@ -235,7 +293,9 @@ export const medicalService = {
    * @roles DOCTOR (own, within reopen window), ADMIN
    */
   reopenMedicalRecord: async (recordId: string): Promise<MedicalRecord> => {
-    const response = await api.post<MedicalRecord>(`/medical/records/${recordId}/reopen`);
+    const response = await api.post<MedicalRecord>(
+      `/medical/records/${recordId}/reopen`,
+    );
     return normalizeMedicalRecord(response.data);
   },
 
@@ -249,8 +309,12 @@ export const medicalService = {
   /**
    * Tạo file PDF bệnh án mới
    */
-  generateMedicalRecordPdf: async (recordId: string): Promise<{ pdfUrl: string }> => {
-    const response = await api.post<{ pdfUrl: string }>(`/medical/records/${recordId}/pdf`);
+  generateMedicalRecordPdf: async (
+    recordId: string,
+  ): Promise<{ pdfUrl: string }> => {
+    const response = await api.post<{ pdfUrl: string }>(
+      `/medical/records/${recordId}/pdf`,
+    );
     return response.data;
   },
 
@@ -264,11 +328,14 @@ export const medicalService = {
   /**
    * Tạo file PDF đơn thuốc mới
    */
-  generatePrescriptionPdf: async (prescriptionId: string): Promise<{ pdfUrl: string }> => {
-    const response = await api.post<{ pdfUrl: string }>(`/medical/prescriptions/${prescriptionId}/pdf`);
+  generatePrescriptionPdf: async (
+    prescriptionId: string,
+  ): Promise<{ pdfUrl: string }> => {
+    const response = await api.post<{ pdfUrl: string }>(
+      `/medical/prescriptions/${prescriptionId}/pdf`,
+    );
     return response.data;
   },
-
 
   // ============================================
   // Medical Record - Read-only Detail (COMPLETED)
@@ -279,9 +346,11 @@ export const medicalService = {
    * @roles DOCTOR (treated), PATIENT (own), ADMIN
    * @condition record must exist
    */
-  getMedicalRecordById: async (recordId: string): Promise<MedicalRecordDetailResponse> => {
+  getMedicalRecordById: async (
+    recordId: string,
+  ): Promise<MedicalRecordDetailResponse> => {
     const response = await api.get<MedicalRecordDetailResponse>(
-      `/medical/records/${recordId}/detail`
+      `/medical/records/${recordId}/detail`,
     );
     return response.data;
   },
@@ -290,9 +359,11 @@ export const medicalService = {
    * Get medical record for examination (Doctor View)
    * Uses optimized DTO
    */
-  getMedicalRecordForExamination: async (recordId: string): Promise<MedicalRecordExamination> => {
+  getMedicalRecordForExamination: async (
+    recordId: string,
+  ): Promise<MedicalRecordExamination> => {
     const response = await api.get<MedicalRecordExamination>(
-      `/medical/records/${recordId}/examination`
+      `/medical/records/${recordId}/examination`,
     );
     return response.data;
   },
@@ -301,8 +372,10 @@ export const medicalService = {
    * Get medical record detail by ID
    * @param id Medical Record ID
    */
-    getDetail: async (id: string): Promise<MedicalRecordDetailResponse> => {
-    const response = await api.get<MedicalRecordDetailResponse>(`/medical/records/${id}/detail`);
+  getDetail: async (id: string): Promise<MedicalRecordDetailResponse> => {
+    const response = await api.get<MedicalRecordDetailResponse>(
+      `/medical/records/${id}/detail`,
+    );
     return response.data;
   },
 
@@ -311,7 +384,9 @@ export const medicalService = {
    * @param id Prescription ID
    */
   getPrescriptionDetail: async (id: string): Promise<Prescription> => {
-    const response = await api.get<Prescription>(`/medical/prescriptions/${id}`);
+    const response = await api.get<Prescription>(
+      `/medical/prescriptions/${id}`,
+    );
     return response.data;
   },
 };
