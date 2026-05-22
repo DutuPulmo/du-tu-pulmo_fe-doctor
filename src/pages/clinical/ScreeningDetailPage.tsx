@@ -30,7 +30,6 @@ import {
   User, 
   Stethoscope, 
   ImageIcon,
-  Search,
   CheckCircle2,
   XCircle,
   Clock,
@@ -108,6 +107,8 @@ export default function ScreeningDetailPage() {
   }
 
   const latestAnalysis = analyses?.[0];
+  const originalImageUrl = latestAnalysis?.originalImageUrl || images?.[0]?.fileUrl;
+  const displayImageUrl = latestAnalysis?.evaluatedImageUrl || originalImageUrl;
 
   return (
     <div className="space-y-8 pb-20 animate-in fade-in duration-500">
@@ -157,17 +158,11 @@ export default function ScreeningDetailPage() {
                 </div>
              </CardHeader>
             <CardContent className="p-0 bg-black min-h-[400px] flex items-center justify-center relative group">
-              {latestAnalysis?.evaluatedImageUrl ? (
+              {displayImageUrl ? (
                 <img
-                  src={latestAnalysis.evaluatedImageUrl}
-                  alt="evaluated"
+                  src={displayImageUrl}
+                  alt={latestAnalysis?.evaluatedImageUrl ? 'evaluated' : 'original'}
                   className="max-h-[600px] w-full object-contain transition-transform duration-500 group-hover:scale-[1.02]"
-                />
-              ) : images?.[0]?.fileUrl ? (
-                <img
-                  src={images[0].fileUrl}
-                  alt="original"
-                  className="max-h-[600px] w-full object-contain"
                 />
               ) : (
                 <div className="flex flex-col items-center gap-2 text-slate-500 py-20">
@@ -175,12 +170,36 @@ export default function ScreeningDetailPage() {
                     <p>Không có hình ảnh chẩn đoán</p>
                 </div>
               )}
-              
-              <div className="absolute bottom-4 right-4 flex gap-2">
-                 <Button size="sm" variant="secondary" className="bg-slate-800/80 text-white border-slate-700 hover:bg-slate-700 backdrop-blur-sm">
-                    <Search className="h-4 w-4 mr-1.5" /> Phóng to
-                 </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="border-none shadow-md bg-slate-900 overflow-hidden">
+            <CardHeader className="bg-slate-800/50 border-b border-slate-700/50 py-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 text-slate-200">
+                  <ImageIcon className="h-4 w-4 text-blue-400" />
+                  <span className="text-sm font-bold uppercase tracking-widest">Ảnh gốc</span>
+                </div>
+                {images?.[0]?.fileName && (
+                  <Badge className="max-w-[240px] truncate bg-blue-600/20 text-blue-400 border-blue-400/30">
+                    {images[0].fileName}
+                  </Badge>
+                )}
               </div>
+            </CardHeader>
+            <CardContent className="p-0 bg-black min-h-[400px] flex items-center justify-center relative group">
+              {originalImageUrl ? (
+                <img
+                  src={originalImageUrl}
+                  alt="original"
+                  className="max-h-[600px] w-full object-contain transition-transform duration-500 group-hover:scale-[1.02]"
+                />
+              ) : (
+                <div className="flex flex-col items-center gap-2 text-slate-500 py-20">
+                  <ImageIcon className="h-12 w-12 opacity-20" />
+                  <p>Không có ảnh gốc</p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
